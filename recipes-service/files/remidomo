@@ -14,9 +14,10 @@
 NAME=remidomo
 DESC="Remidomo service"
 PIDFILE=/var/run/$NAME.pid
-LOGFILE=/tmp/$NAME.log
-DAEMON=/usr/bin/remidomo.py
-DAEMONARGS=""
+LOGFILE=/var/log/$NAME.log
+CONFIGFILE=/etc/$NAME.xml
+DAEMON=/usr/bin/$NAME.py
+DAEMONARGS="--output $LOGFILE --config $CONFIGFILE"
 
 test -f $DAEMON || exit 0
 

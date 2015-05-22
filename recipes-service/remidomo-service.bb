@@ -9,7 +9,17 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/CC-BY-NC-3.0;md5=da665b47544b8c
 
 SRC_URI = "file://remidomo \
 	   file://remidomo.py \
+	   file://config.py \
+	   file://orders.py \
+	   file://remidomo-default-config.xml \
 	  "
+
+FILES_${PN} += "${bindir}/remidomo.py \
+                ${sysconfdir}/init.d/remidomo \
+                ${libdir}/remidomo/orders.py \
+                ${libdir}/remidomo/config.py \
+                ${sysconfdir}/remidomo.xml \
+               "
 
 S = "${WORKDIR}"
 
@@ -34,13 +44,13 @@ do_install() {
     install -m 0755 ${WORKDIR}/remidomo ${D}/${sysconfdir}/init.d
 
     install -d ${D}/usr/bin
-    install -m 0755 ${WORKDIR}/remidomo.py ${D}/usr/bin
+    install -m 0755 ${WORKDIR}/remidomo.py ${D}/${bindir}
 
     install -d ${D}/etc
-    install -m 0644 ${WORKDIR}/remidomo-default-config.xml ${D}/etc/remidomo.xml
+    install -m 0644 ${WORKDIR}/remidomo-default-config.xml ${D}/${sysconfdir}/remidomo.xml
 
-    # Create runlevel links
-    # update-rc.d -r ${D} remidomo defaults
+    install -d ${D}/usr/lib/remidomo
+    install -m 0644 ${WORKDIR}/config.py ${D}/${libdir}/remidomo
+    install -m 0644 ${WORKDIR}/orders.py ${D}/${libdir}/remidomo
 }
-
 

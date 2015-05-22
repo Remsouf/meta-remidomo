@@ -6,8 +6,8 @@ from optparse import OptionParser
 import sys
 import time
 
-DEFAULT_LOG_FILE = '/var/log/remidomo.log'
-
+sys.path.append('/usr/lib/remidomo')
+from config import Config
 
 def main():
     parser = OptionParser()
@@ -19,11 +19,16 @@ def main():
                       help='print debug messages')
     (options, args) = parser.parse_args()
     if not options.config:
-        options.config = DEFAULT_CONFIG_FILE
+        print >> sys.stderr, 'ERROR: Please provide a config file.'
+        print parser.print_help()
+        sys.exit(1)
 
     # Logging
     logger = logging.getLogger('Remidomo')
-    handler = logging.FileHandler(options.output or DEFAULT_LOG_FILE)
+    if options.output:
+        handler = logging.FileHandler(options.output)
+    else:
+        handler = logging.StreamHandler()
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     handler.setFormatter(formatter)
     if options.debug:
@@ -34,7 +39,9 @@ def main():
 
     # Main loop
     logger.info('Démarrage')
+    config = Config(logger)
     while 1:
+        config.read_file(options.config)
         logger.info('Heartbeat !')
         time.sleep(60)
 
