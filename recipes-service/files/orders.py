@@ -31,6 +31,9 @@ class Schedule():
     def get_orders_nb(self):
         return len(self.orders)
 
+    def is_empty(self):
+        return self.get_orders_nb() == 0
+
     def append(self, order):
         self.orders.append(order)
 
