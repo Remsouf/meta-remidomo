@@ -8,6 +8,7 @@ from calendar import TimeEncoding, day_name
 import logging
 import unittest
 import xml.etree.ElementTree as ET
+import datetime
 from orders import Order, Schedule
 
 DEFAULT_HYSTERESIS = 1.0
@@ -165,7 +166,7 @@ class TestConfig(unittest.TestCase):
             Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"/><pouet/></chauffage></remidomo>')
 
     def testCanParseDays(self):
-        config = Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="dimanche"><consigne debut="0800" fin="1600" temperature="12"/></quotidien></chauffage></remidomo>')
+        config = Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/></quotidien></chauffage></remidomo>')
         self.assertEquals(1, config.get_schedule(6).get_orders_nb())
         self.assertEquals(0, config.get_schedule(0).get_orders_nb())
 
@@ -174,32 +175,40 @@ class TestConfig(unittest.TestCase):
         with self.assertRaises(ET.ParseError):
             Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne fin="1600" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="0800" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="08:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="0800" fin="1600"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="08:00" fin="16:00"/></quotidien></chauffage></remidomo>')
 
         # Bad times
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="blah" fin="1600" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="blah" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="0800" fin="blah" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="08:00" fin="blah" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="1.2" fin="1600" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="1.2" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="0800" fin="3.4" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="08:00" fin="3.4" temperature="123"/></quotidien></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="1234" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="08:00" fin="4321" temperature="123"/></quotidien></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="96:12" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="08:00" fin="11:64" temperature="123"/></quotidien></chauffage></remidomo>')
 
         # Bad values
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="0800" fin="1600" temperature="abc"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="lundi"><consigne debut="08:00" fin="16:00" temperature="abc"/></quotidien></chauffage></remidomo>')
 
     def testCanParseOrders(self):
-        config = Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="dimanche"><consigne debut="0800" fin="1600" temperature="12"/><consigne debut="1700" fin="1800" temperature="21"/></quotidien></chauffage></remidomo>')
-        self.assertAlmostEqual(12, config.get_schedule(6).get_order_for(900).get_value(), self.DECIMAL_COMPARE_PLACES)
-        self.assertIsNone(config.get_schedule(6).get_order_for(759))
-        self.assertAlmostEqual(21, config.get_schedule(6).get_order_for(1700).get_value(), self.DECIMAL_COMPARE_PLACES)
-        self.assertIsNone(config.get_schedule(6).get_order_for(1900))
+        config = Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/><consigne debut="17:00" fin="18:00" temperature="21"/></quotidien></chauffage></remidomo>')
+        self.assertAlmostEqual(12, config.get_schedule(6).get_order_for(datetime.time(9, 0)).get_value(), self.DECIMAL_COMPARE_PLACES)
+        self.assertIsNone(config.get_schedule(6).get_order_for(datetime.time(7,59)))
+        self.assertAlmostEqual(21, config.get_schedule(6).get_order_for(datetime.time(17, 0)).get_value(), self.DECIMAL_COMPARE_PLACES)
+        self.assertIsNone(config.get_schedule(6).get_order_for(datetime.time(19, 0)))
 
 
 if __name__ == '__main__':

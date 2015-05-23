@@ -2,25 +2,25 @@
 <remidomo>
   <chauffage>
     <quotidien jour="lundi">
-      <consigne debut="0000" fin="2359" temperature="18"/>
+      <consigne debut="00:00" fin="23:59" temperature="18"/>
     </quotidien>
     <quotidien jour="mardi">
-      <consigne debut="0000" fin="2359" temperature="18"/>
+      <consigne debut="00:00" fin="23:59" temperature="18"/>
     </quotidien>
     <quotidien jour="mercredi">
-      <consigne debut="0000" fin="2359" temperature="18"/>
+      <consigne debut="00:00" fin="23:59" temperature="18"/>
     </quotidien>
     <quotidien jour="jeudi">
-      <consigne debut="0000" fin="2359" temperature="18"/>
+      <consigne debut="00:00" fin="23:59" temperature="18"/>
     </quotidien>
     <quotidien jour="vendredi">
-      <consigne debut="0000" fin="2359" temperature="18"/>
+      <consigne debut="00:00" fin="23:59" temperature="18"/>
     </quotidien>
     <quotidien jour="samedi">
-      <consigne debut="0000" fin="2359" temperature="18"/>
+      <consigne debut="00:00" fin="23:59" temperature="18"/>
     </quotidien>
     <quotidien jour="dimanche">
-      <consigne debut="0000" fin="2359" temperature="18"/>
+      <consigne debut="00:00" fin="23:59" temperature="18"/>
     </quotidien>
   </chauffage>
 </remidomo>

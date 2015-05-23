@@ -6,6 +6,7 @@ Classes used to represent timed orders
 """
 import unittest
 from xml.etree.ElementTree import ParseError
+import datetime
 
 ATTRIB_BEGIN = 'debut'
 ATTRIB_END = 'fin'
@@ -23,7 +24,7 @@ class Schedule():
 
     def get_order_for(self, time):
         for candidate in self.orders:
-            if (candidate.begin <= time <= candidate.end):
+            if candidate.begin <= time <= candidate.end:
                 return candidate
         return None
 
@@ -57,8 +58,12 @@ class Order():
             attr = node.attrib[ATTRIB_BEGIN]
         except KeyError:
             raise ParseError('Missing begin time')
+
+        numbers = attr.split(':')
+        if len(numbers) != 2:
+            raise ParseError('Bad begin time "%s"' % attr)
         try:
-            self.begin = int(attr)
+            self.begin = datetime.time(int(numbers[0]), int(numbers[1]), 0)
         except ValueError:
             raise ParseError('Bad begin time "%s"' % attr)
 
@@ -66,8 +71,12 @@ class Order():
             attr = node.attrib[ATTRIB_END]
         except KeyError:
             raise ParseError('Missing end time')
+
+        numbers = attr.split(':')
+        if len(numbers) != 2:
+            raise ParseError('Bad end time "%s"' % attr)
         try:
-            self.end = int(attr)
+            self.end = datetime.time(int(numbers[0]), int(numbers[1]), 0)
         except ValueError:
             raise ParseError('Bad end time "%s"' % attr)
 
