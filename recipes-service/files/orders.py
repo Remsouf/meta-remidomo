@@ -15,7 +15,7 @@ ATTRIB_VALUE = 'temperature'
 """
 A schedule, i.e. a set of orders for a same day
 """
-class Schedule():
+class Schedule:
     def __init__(self):
         self.orders = []
 
@@ -41,7 +41,7 @@ class Schedule():
 """
 An order, i.e. a time range and a value
 """
-class Order():
+class Order:
     def __init__(self):
         self.begin = None
         self.end = None

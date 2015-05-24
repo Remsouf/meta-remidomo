@@ -13,6 +13,11 @@ from orders import Order, Schedule
 
 DEFAULT_HYSTERESIS = 1.0
 TAG_ROOT = 'remidomo'
+
+TAG_SENSORS = 'sondes'
+TAG_TEMPERATURE = 'temperature'
+ATTRIB_ID = 'id'
+
 TAG_HEATING = 'chauffage'
 
 TAG_DAY = 'quotidien'
@@ -24,7 +29,8 @@ ATTRIB_UNDER = 'negatif'
 
 TAG_ORDER = 'consigne'
 
-class Config():
+
+class Config:
 
     def __init__(self, logger):
         self.logger = logger
@@ -42,6 +48,7 @@ class Config():
     def set_defaults(self):
         self.hysteresis_over = DEFAULT_HYSTERESIS
         self.hysteresis_under = DEFAULT_HYSTERESIS
+        self.temperature_sensor_id = None
 
         self.schedule = []
         for index in range(7):
@@ -56,13 +63,16 @@ class Config():
     def get_hysteresis_under(self):
         return self.hysteresis_under
 
+    def get_temperature_sensor_id(self):
+        return self.temperature_sensor_id
+
     """
     Read a config (XML) file
     """
     def read_file(self, input_file):
         self.logger.info('Lecture du fichier de config : %s' % input_file)
-        with open(input_file, 'r') as input:
-            self.parse_string(input.read())
+        with open(input_file, 'r') as desc:
+            self.parse_string(desc.read())
 
     """
     Parse a string containing the XML config
@@ -76,10 +86,20 @@ class Config():
         for child in root:
             if child.tag == TAG_HEATING:
                 self.__parse_heating(child)
+            elif child.tag == TAG_SENSORS:
+                self.__parse_sensors(child)
             else:
                 raise ET.ParseError('Unknown tag "%s"' % child.tag)
 
         return self
+
+    def __parse_sensors(self, node):
+        for child in node:
+            if child.tag == TAG_TEMPERATURE:
+                if ATTRIB_ID in child.attrib:
+                    self.temperature_sensor_id = child.attrib[ATTRIB_ID]
+                else:
+                    raise ET.ParseError('Missing "%s" attribute for tag "%s"' % (ATTRIB_ID, TAG_TEMPERATURE))
 
     def __parse_heating(self, node):
         for child in node:
@@ -159,6 +179,14 @@ class TestConfig(unittest.TestCase):
         self.assertAlmostEqual(12.34, config.get_hysteresis_over(), self.DECIMAL_COMPARE_PLACES)
         self.assertAlmostEqual(34.21, config.get_hysteresis_under(), self.DECIMAL_COMPARE_PLACES)
 
+    def testCannotParseBadSensors(self):
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><sondes><temperature/></sondes></remidomo>')
+
+    def testCanParseSensors(self):
+        config = Config(self.logger).parse_string('<remidomo><sondes><temperature id="deadbeef"/></sondes></remidomo>')
+        self.assertEqual('deadbeef', config.get_temperature_sensor_id())
+
     def testCannotParseBadDay(self):
         with self.assertRaises(ET.ParseError):
             Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="blah"/></chauffage></remidomo>')
@@ -206,11 +234,10 @@ class TestConfig(unittest.TestCase):
     def testCanParseOrders(self):
         config = Config(self.logger).parse_string('<remidomo><chauffage><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/><consigne debut="17:00" fin="18:00" temperature="21"/></quotidien></chauffage></remidomo>')
         self.assertAlmostEqual(12, config.get_schedule(6).get_order_for(datetime.time(9, 0)).get_value(), self.DECIMAL_COMPARE_PLACES)
-        self.assertIsNone(config.get_schedule(6).get_order_for(datetime.time(7,59)))
+        self.assertIsNone(config.get_schedule(6).get_order_for(datetime.time(7, 59)))
         self.assertAlmostEqual(21, config.get_schedule(6).get_order_for(datetime.time(17, 0)).get_value(), self.DECIMAL_COMPARE_PLACES)
         self.assertIsNone(config.get_schedule(6).get_order_for(datetime.time(19, 0)))
 
 
 if __name__ == '__main__':
     unittest.main()
-
