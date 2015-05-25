@@ -7,11 +7,12 @@ import sys
 import time
 import datetime
 from executor import Executor
+from rfx_listener import RFXListener
 
 sys.path.append('/usr/lib/remidomo')
 from config import Config
 
-def check_orders(logger, config, executor):
+def check_orders(logger, config, executor, rfx_listener):
     # Get the schedule for today
     today = datetime.date.today().weekday()
     schedule = config.get_schedule(today)
@@ -29,7 +30,14 @@ def check_orders(logger, config, executor):
         return
 
     # Execute order, depending on temperature
-    current_temperature = 0  # TODO
+    sensor_name = config.get_heating_sensor_name()
+    sensor_id = config.get_sensor_id(sensor_name)
+    current_temperature = rfx_listener.get_sensor_value(sensor_id)
+    if current_temperature is None:
+        logger.info('Current temperature is not known')
+        executor.heating_poweroff()
+        return
+
     low_limit = order.get_value() - config.get_hysteresis_under()
     high_limit = order.get_value() + config.get_hysteresis_over()
 
@@ -73,16 +81,22 @@ def main():
     # Main loop
     logger.info('Démarrage')
     config = Config(logger)
-    executor = Executor(logger)
+    config.read_file(options.config)
+    executor = Executor(config, logger)
+    rfx_listener = RFXListener(config, logger)
+    rfx_listener.start()
     while 1:
-        config.read_file(options.config)
-        check_orders(logger, config, executor)
-        time.sleep(60)
+        try:
+            check_orders(logger, config, executor, rfx_listener)
+            time.sleep(60)
+        except KeyboardInterrupt:
+            print >> sys.stderr, '\nExiting by user request.\n'
+            rfx_listener.stop()
+            sys.exit(0)
+        except Exception:
+            # If main thread crashes, we must also stop RFX thread !
+            rfx_listener.stop()
+            raise
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print >> sys.stderr, '\nExiting by user request.\n'
-        sys.exit(0)
-
+    main()

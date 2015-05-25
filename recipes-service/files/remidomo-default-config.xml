@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <remidomo>
-  <sondes>
-    <temperature id="th2 0x8305"/>
-  </sondes>
-  <chauffage>
+  <rfxlan port="3865">
+    <temperature id="th2 0x8305" nom="salon"/>
+  </rfxlan>
+  <chauffage capteur="salon">
     <quotidien jour="lundi">
       <consigne debut="00:00" fin="23:59" temperature="18"/>
     </quotidien>
