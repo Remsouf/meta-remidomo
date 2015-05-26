@@ -17,7 +17,7 @@ PIDFILE=/var/run/$NAME.pid
 LOGFILE=/var/log/$NAME.log
 CONFIGFILE=/etc/$NAME.xml
 DAEMON=/usr/bin/$NAME.py
-DAEMONARGS="--output $LOGFILE --config $CONFIGFILE"
+DAEMONARGS="--output $LOGFILE --config $CONFIGFILE -d"
 
 test -f $DAEMON || exit 0
 

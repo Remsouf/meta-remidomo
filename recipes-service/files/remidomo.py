@@ -6,10 +6,10 @@ from optparse import OptionParser
 import sys
 import time
 import datetime
-from executor import Executor
-from rfx_listener import RFXListener
 
 sys.path.append('/usr/lib/remidomo')
+from executor import Executor
+from rfx_listener import RFXListener
 from config import Config
 
 def check_orders(logger, config, executor, rfx_listener):
