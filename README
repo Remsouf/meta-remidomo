@@ -17,7 +17,7 @@ This layer depends on:
   branch: master
 
   URI: git://git.openembedded.org/meta-openembedded
-  layers: meta-webserver
+  layers: meta-webserver, meta-python, meta-oe
   branch: master
   revision: HEAD
 
