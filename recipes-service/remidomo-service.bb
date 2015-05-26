@@ -8,16 +8,22 @@ RDEPENDS_${PN} = "bash python python-modules python-misc"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/CC-BY-NC-3.0;md5=da665b47544b8cf138600d9e2aeefadd"
 
 SRC_URI = "file://remidomo \
-	   file://remidomo.py \
-	   file://config.py \
-	   file://orders.py \
-	   file://remidomo-default-config.xml \
+           file://remidomo.py \
+           file://config.py \
+           file://orders.py \
+           file://executor.py \
+           file://rfx_listener.py \
+           file://xpl_msg.py \
+           file://remidomo-default-config.xml \
 	  "
 
 FILES_${PN} += "${bindir}/remidomo.py \
                 ${sysconfdir}/init.d/remidomo \
-                ${libdir}/remidomo/orders.py \
-                ${libdir}/remidomo/config.py \
+                ${libdir}/remidomo/service/orders.py \
+                ${libdir}/remidomo/service/config.py \
+                ${libdir}/remidomo/service/executor.py \
+                ${libdir}/remidomo/service/rfx_listener.py \
+                ${libdir}/remidomo/service/xpl_msg.py \
                 ${sysconfdir}/remidomo.xml \
                "
 
@@ -43,14 +49,17 @@ do_install() {
     install -d ${D}/${sysconfdir}/default
     install -m 0755 ${WORKDIR}/remidomo ${D}/${sysconfdir}/init.d
 
-    install -d ${D}/usr/bin
+    install -d ${D}/${bindir}
     install -m 0755 ${WORKDIR}/remidomo.py ${D}/${bindir}
 
-    install -d ${D}/etc
+    install -d ${D}/${sysconfdir}
     install -m 0644 ${WORKDIR}/remidomo-default-config.xml ${D}/${sysconfdir}/remidomo.xml
 
-    install -d ${D}/usr/lib/remidomo
-    install -m 0644 ${WORKDIR}/config.py ${D}/${libdir}/remidomo
-    install -m 0644 ${WORKDIR}/orders.py ${D}/${libdir}/remidomo
+    install -d ${D}/${libdir}/remidomo/service
+    install -m 0644 ${WORKDIR}/config.py ${D}/${libdir}/remidomo/service
+    install -m 0644 ${WORKDIR}/orders.py ${D}/${libdir}/remidomo/service
+    install -m 0644 ${WORKDIR}/executor.py ${D}/${libdir}/remidomo/service
+    install -m 0644 ${WORKDIR}/rfx_listener.py ${D}/${libdir}/remidomo/service
+    install -m 0644 ${WORKDIR}/xpl_msg.py ${D}/${libdir}/remidomo/service
 }
 

@@ -7,7 +7,7 @@ import sys
 import time
 import datetime
 
-sys.path.append('/usr/lib/remidomo')
+sys.path.append('/usr/lib/remidomo/service')
 from executor import Executor
 from rfx_listener import RFXListener
 from config import Config
