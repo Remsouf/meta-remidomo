@@ -3,7 +3,7 @@ SUMMARY = "Remidomo web server"
 LICENSE = "CC-BY-NC-3.0"
 PR = "r0"
 
-RDEPENDS_${PN} = "bash python python-django python-modules python-misc python-flup"
+RDEPENDS_${PN} = "bash python python-django python-modules python-misc python-flup nginx"
 
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/CC-BY-NC-3.0;md5=da665b47544b8cf138600d9e2aeefadd"
 
@@ -12,7 +12,7 @@ SRC_URI = "file://manage.py \
 	   file://remidomo/urls.py \
            file://remidomo/wsgi.py \
            file://remidomo/settings.py \
-           file://remidomo.conf \
+           file://nginx.conf \
            file://fastcgi \
           "
 
@@ -21,7 +21,7 @@ FILES_${PN} += "${libdir}/remidomo/web/manage.py \
                 ${libdir}/remidomo/web/remidomo/urls.py \
                 ${libdir}/remidomo/web/remidomo/wsgi.py \
                 ${libdir}/remidomo/web/remidomo/settings.py \
-                ${sysconfdir}/nginx/sites-available/remidomo.conf \
+                ${sysconfdir}/nginx/nginx.conf \
                 ${sysconfdir}/init.d/fastcgi \
                "
 
@@ -57,9 +57,8 @@ do_install() {
     install -m 0644 ${WORKDIR}/remidomo/wsgi.py ${D}/${libdir}/remidomo/web/remidomo
     install -m 0644 ${WORKDIR}/remidomo/settings.py ${D}/${libdir}/remidomo/web/remidomo
 
-    install -d ${D}/${sysconfdir}/nginx/sites-available
-    install -m 0644 ${WORKDIR}/remidomo.conf ${D}/${sysconfdir}/nginx/sites-available
-    install -d ${D}/${sysconfdir}/nginx/sites-enabled
-    ln -s -r ${D}/${sysconfdir}/nginx/sites-available/remidomo.conf ${D}/${sysconfdir}/nginx/sites-enabled/remidomo.conf
+    # Overwrite nginx config file
+    install -d ${D}/${sysconfdir}/nginx
+    install -m 0644 ${WORKDIR}/nginx.conf ${D}/${sysconfdir}/nginx
 }
 

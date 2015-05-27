@@ -20,9 +20,10 @@
 #### SERVER SPECIFIC CONFIGURATION
 DJANGO_SITES="web"
 SITES_PATH=/usr/lib/remidomo
-RUNFILES_PATH=/var/run
-HOST=0.0.0.0
-PORT_START=80
+# Can't point to /var/run, as www-data wouldn't be able to create pid file...
+RUNFILES_PATH=/tmp
+HOST=127.0.0.1
+PORT_START=8080
 RUN_AS=www-data
 FCGI_METHOD=threaded
 #### DO NOT CHANGE ANYTHING AFTER THIS LINE!
