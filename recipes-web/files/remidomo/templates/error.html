@@ -1,0 +1,47 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}">
+<head>
+<title>{% block title %}{% endblock %}</title>
+<link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "css/base.css" %}{% endblock %}" />
+{% block extrastyle %}{% endblock %}
+{% block extrahead %}{% endblock %}
+{% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+</head>
+
+{% load i18n %}
+
+<body class="{% block bodyclass %}{% endblock %}">
+
+<!-- Container -->
+<div id="container">
+
+    <!-- Header -->
+    <div id="header">
+        <div id="branding" style="float: left;">
+            <img src="{% static "remidomo.png" %}" alt="remidomo" width="100em"/>
+        </div>
+	<div style="float: left; margin-left: 50px;">
+	    <h1>{% block error %}{% endblock %}</h1>
+	</div>
+    </div>
+    <!-- END Header -->
+
+    <!-- Content -->
+    <div id="content" style="clear: both;">
+        <div align="center"><img src="{% static "nelson.jpg" %}" alt="ah ah !"/>
+        {% block details %}{% endblock %}
+	</div>
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+
+
+    <div id="footer">
+	<a href="/">Accueil</a>
+    </div>
+</div>
+<!-- END Container -->
+
+</body>
+</html>

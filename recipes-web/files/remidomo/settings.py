@@ -20,11 +20,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = '^qh6)^rnp(l%l(e=ug*$kw!(qk&-z@mep@_)0my$3xbgh8-ehi'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'remidomo/templates')]
+
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'remidomo/static'),)
+STATIC_URL = '/static/'
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -36,6 +41,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'remidomo.chauffage'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -69,9 +75,9 @@ LANGUAGE_CODE = 'fr-fr'
 
 TIME_ZONE = 'Europe/Paris'
 
-USE_I18N = True
+USE_I18N = False
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = True
 
