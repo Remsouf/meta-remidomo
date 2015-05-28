@@ -8,21 +8,23 @@ RDEPENDS_${PN} = "bash python python-django python-modules python-misc python-fl
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/CC-BY-NC-3.0;md5=da665b47544b8cf138600d9e2aeefadd"
 
 SRC_URI = "file://manage.py \
-           file://remidomo/static/* \
-           file://remidomo/templates/* \
+           file://remidomo/static/images \
+           file://remidomo/static/css \
+           file://remidomo/templates/*.html \
            file://remidomo/*.py \
            file://remidomo/chauffage/*.py \
-           file://remidomo/chauffage/templates/* \
+           file://remidomo/chauffage/templates/*.html \
            file://nginx.conf \
            file://fastcgi \
           "
 
 FILES_${PN} += "${libdir}/remidomo/web/manage.py \
-                ${libdir}/remidomo/web/remidomo/static/* \
-                ${libdir}/remidomo/web/remidomo/templates/* \
+                ${libdir}/remidomo/web/remidomo/static/images \
+                ${libdir}/remidomo/web/remidomo/static/css \
+                ${libdir}/remidomo/web/remidomo/templates/*.html \
                 ${libdir}/remidomo/web/remidomo/*.py \
                 ${libdir}/remidomo/web/remidomo/chauffage/*.py \
-                ${libdir}/remidomo/web/remidomo/chauffage/templates/* \
+                ${libdir}/remidomo/web/remidomo/chauffage/templates/*.html \
                 ${sysconfdir}/nginx/nginx.conf \
                 ${sysconfdir}/init.d/fastcgi \
                "
@@ -56,8 +58,10 @@ do_install() {
     # Install project
     install -d ${D}/${libdir}/remidomo/web/remidomo
     install -m 0644 ${WORKDIR}/remidomo/*.py ${D}/${libdir}/remidomo/web/remidomo
-    install -d ${D}/${libdir}/remidomo/web/remidomo/static
-    install -m 0644 ${WORKDIR}/remidomo/static/* ${D}/${libdir}/remidomo/web/remidomo/static
+    install -d ${D}/${libdir}/remidomo/web/remidomo/static/images
+    install -m 0644 ${WORKDIR}/remidomo/static/images/* ${D}/${libdir}/remidomo/web/remidomo/static/images
+    install -d ${D}/${libdir}/remidomo/web/remidomo/static/css
+    install -m 0644 ${WORKDIR}/remidomo/static/css/* ${D}/${libdir}/remidomo/web/remidomo/static/css
     install -d ${D}/${libdir}/remidomo/web/remidomo/templates
     install -m 0644 ${WORKDIR}/remidomo/templates/* ${D}/${libdir}/remidomo/web/remidomo/templates
 

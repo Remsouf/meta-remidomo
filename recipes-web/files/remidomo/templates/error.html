@@ -1,6 +1,6 @@
 {% load staticfiles %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:"en-us" }}">
+<html lang="{{ LANGUAGE_CODE|default:"fr-fr" }}">
 <head>
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "css/base.css" %}{% endblock %}" />
@@ -13,35 +13,37 @@
 
 <body class="{% block bodyclass %}{% endblock %}">
 
-<!-- Container -->
-<div id="container">
+    <!-- Container -->
+    <div class="container">
 
-    <!-- Header -->
-    <div id="header">
-        <div id="branding" style="float: left;">
-            <img src="{% static "remidomo.png" %}" alt="remidomo" width="100em"/>
+        <!-- Header -->
+        <div class="header">
+            <img class="logo" src="{% static "images/remidomo.png" %}" alt="remidomo"/>
+            <div class="brand"><span class="brand">{% block banner %}{% endblock %}</span></div>
         </div>
-	<div style="float: left; margin-left: 50px;">
-	    <h1>{% block error %}{% endblock %}</h1>
-	</div>
-    </div>
-    <!-- END Header -->
+        <!-- END Header -->
 
-    <!-- Content -->
-    <div id="content" style="clear: both;">
-        <div align="center"><img src="{% static "nelson.jpg" %}" alt="ah ah !"/>
-        {% block details %}{% endblock %}
-	</div>
-        <br class="clear" />
-    </div>
-    <!-- END Content -->
+        <!-- Content -->
+        <div id="content" style="clear: both;">
+            <div align="center"><img src="{% static "images/nelson.jpg" %}" alt="ah ah !"/>
+                {% block details %}{% endblock %}
+            </div>
+            <br class="clear" />
+        </div>
+        <!-- END Content -->
 
-
-    <div id="footer">
-	<a href="/">Accueil</a>
+        <div class="push"></div>
     </div>
-</div>
-<!-- END Container -->
+    <!-- END Container -->
+
+    <!-- Navigation Footer -->
+    <div class="footer">
+        <a class="navitem" href="/">Accueil</a>
+        <a class="navitem" href="/chauffage">Chauffage</a>
+        <a class="navitem" href="/about">A propos</a>
+        <a class="navitem" href="/logs">Journal</a>
+    </div>
+    <!-- END Footer -->
 
 </body>
 </html>

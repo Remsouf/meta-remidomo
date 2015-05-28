@@ -1,6 +1,6 @@
 {% load staticfiles %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:"en-us" }}">
+<html lang="{{ LANGUAGE_CODE|default:"fr-fr" }}">
 <head>
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "css/base.css" %}{% endblock %}" />
@@ -13,33 +13,41 @@
 
 <body class="{% block bodyclass %}{% endblock %}">
 
-<!-- Container -->
-<div id="container">
+    <!-- Container -->
+    <div class="container">
 
-    <!-- Header -->
-    <div id="header">
-        <div id="branding">
-            <img src="{% static "remidomo.png" %}" alt="remidomo" width="100em"/>
+        <!-- Header -->
+        <div class="header">
+            <img class="logo" src="{% static "images/remidomo.png" %}" alt="remidomo"/>
+            <div class="brand"><span class="brand">Remidomo</span></div>
         </div>
-    </div>
-    <!-- END Header -->
+        <!-- END Header -->
 
-    <!-- Content -->
-    <div id="content" class="{% block coltype %}colM{% endblock %}">
-        {% block pretitle %}{% endblock %}
-        {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
-        {% block content %}
-        {% block object-tools %}{% endblock %}
-        {{ content }}
-        {% endblock %}
-        {% block sidebar %}{% endblock %}
-        <br class="clear" />
-    </div>
-    <!-- END Content -->
+        <!-- Content -->
+        <div class="content">
+            {% block pretitle %}{% endblock %}
+            {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+            {% block content %}
+            {% block object-tools %}{% endblock %}
+            {{ content }}
+            {% endblock %}
+            {% block sidebar %}{% endblock %}
+            <br class="clear" />
+        </div>
+        <!-- END Content -->
 
-    {% block footer %}<div id="footer"></div>{% endblock %}
-</div>
-<!-- END Container -->
+        <div class="push"></div>
+    </div>
+    <!-- END Container -->
+
+    <!-- Navigation Footer -->
+    <div class="footer">
+        <a class="navitem" href="/">Accueil</a>
+        <a class="navitem" href="/chauffage">Chauffage</a>
+        <a class="navitem" href="/about">A propos</a>
+        <a class="navitem" href="/logs">Journal</a>
+    </div>
+    <!-- END Footer -->
 
 </body>
 </html>

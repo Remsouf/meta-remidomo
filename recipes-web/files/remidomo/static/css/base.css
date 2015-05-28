@@ -1,0 +1,81 @@
+* {
+	margin: 0;
+}
+
+html, body {
+	height: 100%;
+}
+
+.header {
+    height: 100px;
+    width: 100%;
+    padding-top: 10px;
+}
+
+.logo, .brand, a.navitem {
+    background: linear-gradient(azure, lavender);
+}
+
+.logo, .brand {
+    border-radius: 10px;
+}
+
+a.navitem {
+    border-radius: 5px;
+}
+
+.logo {
+    width: auto;
+    max-height: 100%;
+    float: left;
+    padding: 5px;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+
+.brand {
+    height: 110px;
+    margin-left: 140px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+span.brand {
+    display: block;
+    text-align: center;
+    margin: 0 auto;
+    font-size: 4em;
+    font-family: arial;
+    line-height: 100px;
+}
+
+.container {
+	min-height: 100%;
+	height: auto !important;
+	height: 100%;
+	margin: 0 auto -40px;
+}
+
+.footer, .push {
+	height: 30px;
+	padding-left: 5px;
+	padding-right: 5px;
+    padding-bottom: 10px;
+}
+
+a.navitem {
+    font-family: arial;
+    padding-right: 3em;
+    padding-left: 3em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.content {
+    padding: 1em;
+    font-family: arial;
+    position: absolute;
+}
