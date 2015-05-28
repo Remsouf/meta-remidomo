@@ -29,7 +29,7 @@ TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'remidomo/templates')]
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'remidomo/static'),)
 STATIC_URL = '/static/'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
