@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static "css/logs.css" %}" />
+{% endblock %}
+
+{% block title %}Journal{% endblock %}
+
+{% block content %}
+<div id="logs">
+    <h3>Service Remidomo</h3>
+    <div class="log"><pre>{{ service_log }}</pre></div>
+
+    <h3>Django</h3>
+    <div class="log"><pre>{{ django_log }}</pre></div>
+
+    <h3>nginx - Erreurs</h3>
+    <div class="log"><pre>{{ nginx_error_log }}</pre></div>
+
+    <h3>nginx - Accès</h3>
+    <div class="log"><pre>{{ nginx_access_log }}</pre></div>
+</div>
+{% endblock %}
+
+{% block script %}
+    $('#logs').accordion({
+        collapsible:true
+    });
+{% endblock %}
+

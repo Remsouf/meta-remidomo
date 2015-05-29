@@ -1,0 +1,12 @@
+.content {
+    width: 98%;
+}
+
+pre.log {
+    font-size: 0.5em;
+}
+
+#logs .ui-accordion-content {
+    max-height: 150px;
+}
+

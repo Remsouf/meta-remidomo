@@ -9,6 +9,7 @@ import views
 urlpatterns = patterns('',
     url(r'^chauffage/', include('remidomo.chauffage.urls')),
     url(r'^about/', views.about, name='about'),
+    url(r'^logs/', views.logs, name='logs'),
     url(r'^admin/', include(admin.site.urls)),
 
     # Map / to chauffage for now
