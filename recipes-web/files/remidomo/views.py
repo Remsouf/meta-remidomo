@@ -1,6 +1,7 @@
 import os
 from subprocess import PIPE, Popen
 from django.shortcuts import render
+import logging
 import re
 
 
@@ -12,8 +13,12 @@ def get_own_version():
     return re.match("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
 def get_service_version():
-    output = Popen(["remidomo.py", "--version"], stdout=PIPE).communicate()[0]
-    return output
+    try:
+        output = Popen(["remidomo.py", "--version"], stdout=PIPE).communicate()[0]
+        return output
+    except OSError:
+        logging.getLogger('django').error('Failed to get service version')
+        return '?'
 
 def about(request):
     context = { 'service_version': get_service_version(),
