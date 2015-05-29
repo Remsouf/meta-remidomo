@@ -4,8 +4,11 @@ from django.views.generic import RedirectView
 from django.contrib import admin
 admin.autodiscover()
 
+import views
+
 urlpatterns = patterns('',
     url(r'^chauffage/', include('remidomo.chauffage.urls')),
+    url(r'^about/', views.about, name='about'),
     url(r'^admin/', include(admin.site.urls)),
 
     # Map / to chauffage for now

@@ -12,6 +12,8 @@ from executor import Executor
 from rfx_listener import RFXListener
 from config import Config
 
+VERSION = '##REMIDOMO_VERSION##'
+
 def check_orders(logger, config, executor, rfx_listener):
     # Get the schedule for today
     today = datetime.date.today().weekday()
@@ -58,7 +60,14 @@ def main():
                       help='read config from FILE', metavar='FILE')
     parser.add_option('-d', '--debug', dest='debug', action='store_true',
                       help='print debug messages')
+    parser.add_option('-v', '--version', dest='version', action='store_true',
+                      help='print version number and exit')
     (options, args) = parser.parse_args()
+
+    if options.version:
+        print VERSION
+        sys.exit(0)
+
     if not options.config:
         print >> sys.stderr, 'ERROR: Please provide a config file.'
         print parser.print_help()

@@ -50,7 +50,8 @@ do_install() {
     install -m 0755 ${WORKDIR}/remidomo ${D}/${sysconfdir}/init.d
 
     install -d ${D}/${bindir}
-    install -m 0755 ${WORKDIR}/remidomo.py ${D}/${bindir}
+    sed -e "s,##REMIDOMO_VERSION##,${PV},g" \
+        ${WORKDIR}/remidomo.py > ${D}${bindir}/remidomo.py
 
     install -d ${D}/${sysconfdir}
     install -m 0644 ${WORKDIR}/remidomo-default-config.xml ${D}/${sysconfdir}/remidomo.xml
