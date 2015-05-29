@@ -4,6 +4,9 @@
 <head>
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "css/base.css" %}{% endblock %}" />
+<link rel="stylesheet" type="text/css" href="{% static "js/jquery-ui.css" %}" />
+<script src="{% static "js/jquery-2.1.4.js" %}"></script>
+<script src="{% static "js/jquery-ui.js" %}"></script>
 {% block extrastyle %}{% endblock %}
 {% block extrahead %}{% endblock %}
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
@@ -49,5 +52,8 @@
     </div>
     <!-- END Footer -->
 
+    <script>
+    {% block script %}{% endblock %}
+    </script>
 </body>
 </html>

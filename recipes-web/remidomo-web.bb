@@ -10,6 +10,8 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/CC-BY-NC-3.0;md5=da665b47544b8c
 SRC_URI = "file://manage.py \
            file://remidomo/static/images \
            file://remidomo/static/css \
+           file://remidomo/static/js \
+           file://remidomo/static/js/images \
            file://remidomo/templates/*.html \
            file://remidomo/*.py \
            file://remidomo/chauffage/*.py \
@@ -21,6 +23,8 @@ SRC_URI = "file://manage.py \
 FILES_${PN} += "${libdir}/remidomo/web/manage.py \
                 ${libdir}/remidomo/web/remidomo/static/images \
                 ${libdir}/remidomo/web/remidomo/static/css \
+                ${libdir}/remidomo/web/remidomo/static/js \
+                ${libdir}/remidomo/web/remidomo/static/js/images \
                 ${libdir}/remidomo/web/remidomo/templates/*.html \
                 ${libdir}/remidomo/web/remidomo/*.py \
                 ${libdir}/remidomo/web/remidomo/chauffage/*.py \
@@ -62,6 +66,10 @@ do_install() {
     install -m 0644 ${WORKDIR}/remidomo/static/images/* ${D}/${libdir}/remidomo/web/remidomo/static/images
     install -d ${D}/${libdir}/remidomo/web/remidomo/static/css
     install -m 0644 ${WORKDIR}/remidomo/static/css/* ${D}/${libdir}/remidomo/web/remidomo/static/css
+    install -d ${D}/${libdir}/remidomo/web/remidomo/static/js
+    install -m 0644 ${WORKDIR}/remidomo/static/js/* ${D}/${libdir}/remidomo/web/remidomo/static/js
+    install -d ${D}/${libdir}/remidomo/web/remidomo/static/js/images
+    install -m 0644 ${WORKDIR}/remidomo/static/js/images/* ${D}/${libdir}/remidomo/web/remidomo/static/js/images
     install -d ${D}/${libdir}/remidomo/web/remidomo/templates
     install -m 0644 ${WORKDIR}/remidomo/templates/* ${D}/${libdir}/remidomo/web/remidomo/templates
 

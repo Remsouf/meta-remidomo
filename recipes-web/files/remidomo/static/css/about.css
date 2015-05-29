@@ -1,21 +1,9 @@
-
-.container {
-    width: auto;
-    text-align:center;
-}
-
 .frame {
     display: table;
-    margin: 0 auto;
     border: 2px solid black;
     padding: 1em;
     width: 15em;
     height: 3em;
-}
-
-.content {
-    width: 95%;
-    margin-top: 5em;
 }
 
 .version {
