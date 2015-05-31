@@ -82,5 +82,8 @@ do_install() {
     # Overwrite nginx config file
     install -d ${D}/${sysconfdir}/nginx
     install -m 0644 ${WORKDIR}/nginx.conf ${D}/${sysconfdir}/nginx
+
+    # Directory to contain sqlite DB
+    install -m 0777 -d ${D}/${localstatedir}/remidomo
 }
 

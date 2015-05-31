@@ -12,7 +12,6 @@ urlpatterns = patterns('',
     url(r'^logs/', views.logs, name='logs'),
     url(r'^admin/', include(admin.site.urls)),
 
-    # Map / to chauffage for now
-    url(r'^$', RedirectView.as_view(url='chauffage/', permanent=False), name='index'),
+    url(r'^$', RedirectView.as_view(url='chauffage/status', permanent=False), name='index'),
 )
 

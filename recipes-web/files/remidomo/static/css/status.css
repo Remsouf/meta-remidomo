@@ -1,0 +1,45 @@
+.temp_status {
+    display: table-row;
+}
+
+.frame {
+    display: table-cell;
+    background: linear-gradient(azure, lavender);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.label {
+    font-style: italic;
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.temperature {
+    display: table-cell;
+    text-align: center;
+    margin: 0 auto;
+    font-size: 4em;
+    font-family: arial;
+}
+
+.units {
+    display: table-cell;
+    vertical-align: top;
+    padding-top: 0.75em;
+}
+
+.ilya {
+    font-style: italic;
+    text-align: center;
+}
+
+.spacer {
+    margin-right:  5em;
+    margin-left: 5em;
+}
+
+.content {
+    margin-top: 3em;
+    width: 95%;
+}

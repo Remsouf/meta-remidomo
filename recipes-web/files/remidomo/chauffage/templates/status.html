@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static "css/status.css" %}" />
+{% endblock %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="temp_status" id="temp_status">
+    <div class="frame">
+        <div class="label">Ext&eacute;rieur</div>
+        <div style="display: table-row;">
+            <div class="temperature">{{ temperature_ext }}</div>
+            <div class="units">&deg;C</div>
+        </div>
+        <div class="ilya">Il y a {{ ilya_ext }}</div>
+    </div>
+
+    <div class="spacer">&nbsp;</div>
+
+    <div class="frame">
+        <div class="label">Int&eacute;rieur</div>
+        <div style="display: table-row;">
+            <div class="temperature">{{ temperature_int }}</div>
+            <div class="units">&deg;C</div>
+        </div>
+        <div class="ilya">Il y a {{ ilya_int }}</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+    $('#temp_status').position({
+        my: "center",
+        at: "center",
+        of: "#content"
+    });
+{% endblock %}
+
