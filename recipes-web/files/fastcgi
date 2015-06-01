@@ -47,7 +47,10 @@ d_start()
     do
         echo -n ", $SITE"
 
-        test -f $DB_FILE || python $SITES_PATH/$SITE/manage.py syncdb --noinput
+        if [ ! -f $DB_FILE ]; then
+            python $SITES_PATH/$SITE/manage.py syncdb --noinput
+            echo "from django.contrib.auth.models import User; User.objects.create_superuser('root', 'root@root.com', '##ADMIN_PASSWORD##')" | python $SITES_PATH/$SITE/manage.py shell
+        fi
 
         if [ -f $RUNFILES_PATH/$SITE.pid ]; then
             echo -n " already running"

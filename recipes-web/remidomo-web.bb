@@ -25,6 +25,7 @@ FILES_${PN} += "${libdir}/remidomo/web/manage.py \
                 ${libdir}/remidomo/web/remidomo/static/css \
                 ${libdir}/remidomo/web/remidomo/static/js \
                 ${libdir}/remidomo/web/remidomo/static/js/images \
+                ${libdir}/remidomo/web/remidomo/static/admin \
                 ${libdir}/remidomo/web/remidomo/templates/*.html \
                 ${libdir}/remidomo/web/remidomo/*.py \
                 ${libdir}/remidomo/web/remidomo/chauffage/*.py \
@@ -41,6 +42,11 @@ INITSCRIPT_PARAMS = "defaults"
 
 inherit update-rc.d
 
+python do_fetch() {
+    if bb.data.getVar('DJANGO_ADMIN_PASSWORD', d, False) is None:
+        bb.error('Please provide DJANGO_ADMIN_PASSWORD variable, for example in local.conf')
+}
+
 do_install() {
     # Create directories and install script
     install -d ${D}/${sysconfdir}/init.d
@@ -53,7 +59,10 @@ do_install() {
     install -d ${D}/${sysconfdir}/rc5.d
     install -d ${D}/${sysconfdir}/rc6.d
     install -d ${D}/${sysconfdir}/default
-    install -m 0755 ${WORKDIR}/fastcgi ${D}/${sysconfdir}/init.d
+
+    sed -e "s,##ADMIN_PASSWORD##,${DJANGO_ADMIN_PASSWORD}," \
+            ${WORKDIR}/fastcgi > ${D}/${sysconfdir}/init.d/fastcgi
+    chmod 0755 ${D}/${sysconfdir}/init.d/fastcgi
 
     # Install Python scripts
     install -d ${D}/${libdir}/remidomo/web
@@ -67,7 +76,8 @@ do_install() {
     install -d ${D}/${libdir}/remidomo/web/remidomo/static/css
     install -m 0644 ${WORKDIR}/remidomo/static/css/* ${D}/${libdir}/remidomo/web/remidomo/static/css
     install -d ${D}/${libdir}/remidomo/web/remidomo/static/js
-    install -m 0644 ${WORKDIR}/remidomo/static/js/* ${D}/${libdir}/remidomo/web/remidomo/static/js
+    install -m 0644 ${WORKDIR}/remidomo/static/js/*.css ${D}/${libdir}/remidomo/web/remidomo/static/js
+    install -m 0644 ${WORKDIR}/remidomo/static/js/*.js ${D}/${libdir}/remidomo/web/remidomo/static/js
     install -d ${D}/${libdir}/remidomo/web/remidomo/static/js/images
     install -m 0644 ${WORKDIR}/remidomo/static/js/images/* ${D}/${libdir}/remidomo/web/remidomo/static/js/images
     install -d ${D}/${libdir}/remidomo/web/remidomo/templates
@@ -78,6 +88,9 @@ do_install() {
     install -m 0644 ${WORKDIR}/remidomo/chauffage/*.py ${D}/${libdir}/remidomo/web/remidomo/chauffage
     install -d ${D}/${libdir}/remidomo/web/remidomo/chauffage/templates
     install -m 0644 ${WORKDIR}/remidomo/chauffage/templates/* ${D}/${libdir}/remidomo/web/remidomo/chauffage/templates
+
+    # Install admin static files (just symlink)
+    ln -s /usr/lib/python2.7/site-packages/django/contrib/admin/static/admin ${D}/${libdir}/remidomo/web/remidomo/static/admin
 
     # Overwrite nginx config file
     install -d ${D}/${sysconfdir}/nginx
