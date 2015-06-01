@@ -4,6 +4,8 @@
 from threading import Thread, RLock
 import select
 import socket
+from database import Database
+from xpl_msg import xPLMessage
 
 lock = RLock()
 
@@ -24,11 +26,15 @@ class RFXListener(Thread):
         Thread.__init__(self)
         self.config = config
         self.logger = logger
-        self.sensors = {}
+        self.database = None
         self.terminated = False
 
     def run(self):
         self.logger.debug('Starting RFX thread')
+
+        # This separate thread needs its own DB connection
+        self.database = Database(self.config, self.logger)
+
         port = self.config.get_rfxlan_port()
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -41,21 +47,40 @@ class RFXListener(Thread):
         self.logger.debug('Listening to RFX on %s:%d' % (self.BROADCAST_IP, port))
         while not self.terminated:
             readable, _, _ = select.select([sock], [], [], self.SELECT_TIMEOUT)
-            self.logger.debug('R:%d' % len(readable))
             if len(readable) > 0:
-                data, addr = sock.recvfrom(self.RECV_SIZE)
-                self.logger.debug('ADDR: %s' % addr)
-                self.logger.debug('DATA: %s' % data)
+                data, _ = sock.recvfrom(self.RECV_SIZE)
+                msg = xPLMessage(data)
+                self.handle_message(msg)
 
     def stop(self):
         self.logger.debug('Stopping RFX thread (can take up to %ds)' % self.SELECT_TIMEOUT)
         self.terminated = True
         #self._Thread__stop()
 
-    def get_sensor_value(self, id):
-        with lock:
-            if id in self.sensors:
-                sensor = self.sensors[id]
-                return sensor.get_last_value()
-            else:
-                return None
+    def handle_message(self, message):
+        if message.get_schema_class() != 'sensor':
+            return
+        if message.get_schema_type() != 'basic':
+            return
+
+        msg_type = message.get_named_value_string('type')
+        if msg_type == 'temp':
+            # Check the device is an interesting one
+            device = message.get_named_value_string('device')
+            if self.config.is_sensor_known(device):
+                value = message.get_named_value_float('current')
+                units = message.get_named_value_string('units')
+                name = self.config.get_sensor_name(device)
+
+                # Insert data into database
+                self.database.insert(device, name, value, units)
+        elif msg_type == 'humidity':
+            pass
+        elif msg_type == 'power':
+            pass
+        elif msg_type == 'energy':
+            pass
+        elif msg_type == 'battery':
+            pass
+        else:
+            self.logger.warning('Unknown sensor type "%s"' % msg_type)

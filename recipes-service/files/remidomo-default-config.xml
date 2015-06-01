@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <remidomo>
   <rfxlan port="3865">
-    <temperature id="th2 0x8305" nom="salon"/>
+    <temperature id="th2 0x8305" nom="terrasse"/>
+    <temperature id="th1 0xb402" nom="salon"/>
   </rfxlan>
   <chauffage capteur="salon">
     <quotidien jour="lundi">

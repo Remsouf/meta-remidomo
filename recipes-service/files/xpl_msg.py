@@ -210,7 +210,7 @@ class xPLMessage:
         lines = self.__parse_schema(lines)
         lines = self.__parse_body(lines)
 
-        if len(lines) > 0:
+        if len(lines) > 0 and len(lines[0]) > 0:
             raise xPLException('Unexpected garbage after message body, starting with "%s"' % lines[0])
 
 
@@ -264,10 +264,9 @@ class TestXPL(unittest.TestCase):
             xPLMessage('xpl-cmnd\n{\nhop=1\nsource=myhouse\ntarget=server\n}\nx10.basic\n{\nbip=\n')
         with self.assertRaises(xPLException):
             xPLMessage('xpl-cmnd\n{\nhop=1\nsource=myhouse\ntarget=server\n}\nx10.basic\n{\nbip=bop\n')
-        with self.assertRaises(xPLException):
-            xPLMessage('xpl-cmnd\n{\nhop=1\nsource=myhouse\ntarget=server\n}\nx10.basic\n{\nbip=bop\n}\n')
 
     def testCannotParseGarbageAfterBody(self):
+        xPLMessage('xpl-cmnd\n{\nhop=1\nsource=myhouse\ntarget=server\n}\nx10.basic\n{\nbip=bop\n}\n')
         with self.assertRaises(xPLException):
             xPLMessage('xpl-cmnd\n{\nhop=1\nsource=myhouse\ntarget=server\n}\nx10.basic\n{\nbip=bop\n}\nblah!\n')
 

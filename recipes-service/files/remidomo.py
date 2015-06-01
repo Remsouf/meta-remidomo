@@ -8,9 +8,11 @@ import time
 import datetime
 
 sys.path.append('/usr/lib/remidomo/service')
+
+from config import Config
+from database import Database
 from executor import Executor
 from rfx_listener import RFXListener
-from config import Config
 
 VERSION = '##REMIDOMO_VERSION##'
 
@@ -34,7 +36,8 @@ def check_orders(logger, config, executor, rfx_listener):
     # Execute order, depending on temperature
     sensor_name = config.get_heating_sensor_name()
     sensor_id = config.get_sensor_id(sensor_name)
-    current_temperature = rfx_listener.get_sensor_value(sensor_id)
+    #current_temperature = get_sensor_value(sensor_id)
+    current_temperature = None
     if current_temperature is None:
         logger.info('Current temperature is not known')
         executor.heating_poweroff()
@@ -92,6 +95,7 @@ def main():
     config = Config(logger)
     config.read_file(options.config)
     executor = Executor(config, logger)
+    database = Database(config, logger)
     rfx_listener = RFXListener(config, logger)
     rfx_listener.start()
     while 1:

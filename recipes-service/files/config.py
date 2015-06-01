@@ -78,6 +78,9 @@ class Config:
         else:
             return None
 
+    def is_sensor_known(self, id):
+        return self.get_sensor_name(id) is not None
+
     def get_sensor_id(self, name):
         if name in self.sensors:
             return self.sensors[name]
