@@ -3,7 +3,7 @@ SUMMARY = "Remidomo web server"
 LICENSE = "CC-BY-NC-3.0"
 PR = "r0"
 
-RDEPENDS_${PN} = "bash python python-django python-modules python-misc python-flup nginx"
+RDEPENDS_${PN} = "bash python python-django python-modules python-misc python-flup"
 
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/CC-BY-NC-3.0;md5=da665b47544b8cf138600d9e2aeefadd"
 
@@ -16,7 +16,6 @@ SRC_URI = "file://manage.py \
            file://remidomo/*.py \
            file://remidomo/chauffage/*.py \
            file://remidomo/chauffage/templates/*.html \
-           file://nginx.conf \
            file://fastcgi \
           "
 
@@ -91,10 +90,6 @@ do_install() {
 
     # Install admin static files (just symlink)
     ln -s /usr/lib/python2.7/site-packages/django/contrib/admin/static/admin ${D}/${libdir}/remidomo/web/remidomo/static/admin
-
-    # Overwrite nginx config file
-    install -d ${D}/${sysconfdir}/nginx
-    install -m 0644 ${WORKDIR}/nginx.conf ${D}/${sysconfdir}/nginx
 
     # Directory to contain sqlite DB
     install -m 0777 -d ${D}/${localstatedir}/remidomo
