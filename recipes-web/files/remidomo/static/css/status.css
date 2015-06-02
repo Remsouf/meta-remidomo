@@ -2,11 +2,18 @@
     display: table-row;
 }
 
-.frame {
+.frame-spacer {
+    background: solid black;
     display: table-cell;
+    border-spacing: 5px;
+}
+
+.frame {
     background: linear-gradient(azure, lavender);
     border-radius: 10px;
     padding: 10px;
+    margin-left: 40px;
+    margin-right: 40px;
 }
 
 .label {
@@ -27,6 +34,7 @@
     display: table-cell;
     vertical-align: top;
     padding-top: 0.75em;
+    font-weight: bold;
 }
 
 .ilya {

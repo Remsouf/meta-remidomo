@@ -9,25 +9,18 @@
 
 {% block content %}
 <div class="temp_status" id="temp_status">
-    <div class="frame">
-        <div class="label">Ext&eacute;rieur</div>
-        <div style="display: table-row;">
-            <div class="temperature">{{ temperature_ext }}</div>
-            <div class="units">&deg;C</div>
+    {% for sensor in data %}
+    <div class="frame-spacer">
+        <div class="frame">
+            <div class="label">{{ sensor.name }}</div>
+            <div style="display: table-row;">
+                <div class="temperature">{{ sensor.temp }}</div>
+                <div class="units">&deg;C</div>
+            </div>
+            <div class="ilya">{{ sensor.since_when }}</div>
         </div>
-        <div class="ilya">Il y a {{ ilya_ext }}</div>
     </div>
-
-    <div class="spacer">&nbsp;</div>
-
-    <div class="frame">
-        <div class="label">Int&eacute;rieur</div>
-        <div style="display: table-row;">
-            <div class="temperature">{{ temperature_int }}</div>
-            <div class="units">&deg;C</div>
-        </div>
-        <div class="ilya">Il y a {{ ilya_int }}</div>
-    </div>
+    {% endfor %}
 </div>
 {% endblock %}
 
