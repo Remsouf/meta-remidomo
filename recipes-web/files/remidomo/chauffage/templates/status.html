@@ -3,6 +3,7 @@
 {% load static %}
 {% block extrastyle %}
 <link rel="stylesheet" type="text/css" href="{% static "css/status.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "css/custom-icons.css" %}" />
 {% endblock %}
 
 {% block title %}Tableau de bord{% endblock %}
@@ -22,12 +23,38 @@
     </div>
     {% endfor %}
 </div>
+
+<div class="buttons" id="buttons">
+    <div class="button" id="schedule">&nbsp;</div>
+    <div class="button" id="refresh">&nbsp;</div>
+</div>
 {% endblock %}
 
 {% block script %}
     $('#temp_status').position({
         my: "center",
         at: "center",
+        of: "#content"
+    });
+    $('#schedule').button({
+        icons: {
+            primary: "custom-icon-schedule"
+        },
+        text: false
+    }).click(function() {
+        window.location.href="/chauffage/program";
+    });
+    $('#refresh').button({
+        icons: {
+            primary: "custom-icon-refresh"
+        },
+        text: false
+    }).click(function() {
+        window.location.reload();
+    });
+    $('#buttons').position({
+        my: "center",
+        at: "bottom",
         of: "#content"
     });
 {% endblock %}
