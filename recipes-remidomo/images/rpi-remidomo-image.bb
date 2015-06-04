@@ -8,16 +8,35 @@ ROOTFS_PREPROCESS_COMMAND += "check_vars;"
 ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant;"
 
 python check_vars() {
-    for var in ('WIFI_SSID', 'WIFI_PASSWORD'):
+    for var in ('WIFI_SSID', 'WIFI_PASSWORD', 'ROOT_PASSWORD'):
         if bb.data.getVar(var, d, False) is None:
             bb.error('Please provide %s variable, for example in local.conf' % var)
 }
 
-set_root_passwd() {
-   sed 's%^root:[^:]*:%root:$6$TKDN96JD$3kwBhlexeWBZscmVxs6tIbA/VUYIEf9hYCKqryqSjHiTqQdZDSQdPhPi4xPkRkGhBCKY1YIAPQHPsLSGJYNC81:%' \
-       < ${IMAGE_ROOTFS}/etc/shadow \
-       > ${IMAGE_ROOTFS}/etc/shadow.new;
-   mv ${IMAGE_ROOTFS}/etc/shadow.new ${IMAGE_ROOTFS}/etc/shadow ;
+python set_root_passwd() {
+    import crypt
+
+    password = bb.data.getVar('ROOT_PASSWORD', d, True)
+    rootfs = bb.data.getVar('IMAGE_ROOTFS', d, True)
+
+    # Compute hash
+    salt = crypt.mksalt(crypt.METHOD_SHA512)
+    hashed = crypt.crypt(password, salt)
+
+    # Patch /etc/shadow file
+    conffile = os.path.join(rootfs, 'etc/shadow')
+    newfile = '%s.new' % conffile
+    with open(conffile, 'r') as ifile, open(newfile, 'w') as ofile:
+        for line in ifile:
+            fields = line.split(':')
+            if fields[0] == 'root':
+                fields[1] = hashed
+                line = ':'.join(fields)
+
+            ofile.write(line)
+
+    os.remove(conffile)
+    os.rename(newfile, conffile)
 }
 
 python set_wpa_supplicant() {

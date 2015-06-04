@@ -35,6 +35,8 @@ FILES_${PN} += "${libdir}/remidomo/web/manage.py \
 
 S = "${WORKDIR}"
 
+inherit allarch
+
 INITSCRIPT_PACKAGES = "${PN}"
 INITSCRIPT_NAME = "fastcgi"
 INITSCRIPT_PARAMS = "defaults"

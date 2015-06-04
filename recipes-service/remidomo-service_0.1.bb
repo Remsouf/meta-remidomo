@@ -29,6 +29,8 @@ FILES_${PN} += "${bindir}/remidomo.py \
 
 S = "${WORKDIR}"
 
+inherit allarch
+
 INITSCRIPT_PACKAGES = "${PN}"
 INITSCRIPT_NAME = "remidomo"
 INITSCRIPT_PARAMS = "defaults"
