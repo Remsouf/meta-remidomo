@@ -7,6 +7,7 @@ Classes used to represent service config
 from calendar import TimeEncoding, day_name
 import logging
 import unittest
+from xml.dom import minidom
 import xml.etree.ElementTree as ET
 import datetime
 from orders import Order, Schedule
@@ -55,15 +56,22 @@ class Config:
         self.hysteresis_under = DEFAULT_HYSTERESIS
         self.temperature_sensor_id = None
         self.rfxlan_port = DEFAULT_RFXLAN_PORT
+        self.clear_schedules()
+        self.sensors = {}
 
+    def get_day_names(self):
+        return self.day_names
+
+    def get_schedule(self, day):
+        return self.schedule[day]
+
+    def clear_schedules(self):
         self.schedule = []
         for index in range(7):
             self.schedule.append(Schedule())
 
-        self.sensors = {}
-
-    def get_schedule(self, day):
-        return self.schedule[day]
+    def add_order(self, day, order):
+        self.schedule[day].add_order(order)
 
     def get_hysteresis_over(self):
         return self.hysteresis_over
@@ -94,12 +102,23 @@ class Config:
         return self.rfxlan_port
 
     """
+    Write a config (XML) file
+    """
+    def save(self, output_file):
+        self.logger.info('Ecriture du fichier de config : %s' % output_file)
+        with open(output_file, 'w') as desc:
+            desc.write(self.to_xml())
+
+    """
     Read a config (XML) file
     """
     def read_file(self, input_file):
         self.logger.info('Lecture du fichier de config : %s' % input_file)
         with open(input_file, 'r') as desc:
-            self.parse_string(desc.read())
+            try:
+                self.parse_string(desc.read())
+            except ET.ParseError, e:
+                self.logger.error('Erreur de parsing : %s' % e.message)
 
     """
     Parse a string containing the XML config
@@ -184,10 +203,41 @@ class Config:
         try:
             order = Order()
             order.parse(node)
-            self.schedule[day_index].append(order)
+            self.schedule[day_index].add_order(order)
         except ET.ParseError, e:
             raise ET.ParseError('Day "%s" contains a bad order: %s' % (self.day_names[day_index], e.message))
 
+    """
+    Build XML string describing config
+    """
+    def to_xml(self):
+        root = ET.Element(TAG_ROOT)
+        rfxlan = ET.SubElement(root, TAG_SENSORS)
+        rfxlan.set(ATTRIB_PORT, str(self.get_rfxlan_port()))
+
+        for name, id in self.sensors.items():
+            temp = ET.SubElement(rfxlan, TAG_TEMPERATURE)
+            temp.set(ATTRIB_ID, id)
+            temp.set(ATTRIB_NAME, name)
+
+        chauffage = ET.SubElement(root, TAG_HEATING)
+        chauffage.set(ATTRIB_SENSOR, self.get_heating_sensor_name())
+
+        hysteresis = ET.SubElement(chauffage, TAG_HYSTERESIS)
+        hysteresis.set(ATTRIB_OVER, str(self.get_hysteresis_over()))
+        hysteresis.set(ATTRIB_UNDER, str(self.get_hysteresis_under()))
+
+        for index, day_name in enumerate(self.get_day_names()):
+            day = ET.SubElement(chauffage, TAG_DAY)
+            day.set(ATTRIB_DAY_NAME, day_name)
+
+            for order in self.get_schedule(index).get_orders():
+                order_node = ET.SubElement(day, TAG_ORDER)
+                order.generateXml(order_node)
+
+        string = ET.tostring(root)
+        reparsed = minidom.parseString(string)
+        return reparsed.toprettyxml(indent="  ")
 
 class TestConfig(unittest.TestCase):
     DECIMAL_COMPARE_PLACES = 3
@@ -296,6 +346,18 @@ class TestConfig(unittest.TestCase):
         self.assertIsNone(config.get_schedule(6).get_order_for(datetime.time(7, 59)))
         self.assertAlmostEqual(21, config.get_schedule(6).get_order_for(datetime.time(17, 0)).get_value(), self.DECIMAL_COMPARE_PLACES)
         self.assertIsNone(config.get_schedule(6).get_order_for(datetime.time(19, 0)))
+
+    def testCanSaveFile(self):
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/><consigne debut="17:00" fin="18:15" temperature="21"/></quotidien></chauffage></remidomo>')
+        self.assertEqual('<?xml version="1.0" ?>\n<remidomo>\n  <rfxlan port="3865"/>\n  <chauffage capteur="">\n    <hysteresis negatif="1.0" positif="1.0"/>\n    ' +
+                         '<quotidien jour="lundi"/>\n    <quotidien jour="mardi"/>\n    <quotidien jour="mercredi"/>\n    <quotidien jour="jeudi"/>\n    <quotidien jour="vendredi"/>\n    ' +
+                         '<quotidien jour="samedi"/>\n    <quotidien jour="dimanche">\n      <consigne debut="08:00" fin="16:00" temperature="12.0"/>\n      <consigne debut="17:00" fin="18:15" temperature="21.0"/>\n    ' +
+                         '</quotidien>\n  </chauffage>\n</remidomo>\n', config.to_xml())
+
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur=""><hysteresis positif="12.34" negatif="34.21"/></chauffage></remidomo>')
+        self.assertEqual('<?xml version="1.0" ?>\n<remidomo>\n  <rfxlan port="3865"/>\n  <chauffage capteur="">\n    <hysteresis negatif="34.21" positif="12.34"/>\n    ' +
+                         '<quotidien jour="lundi"/>\n    <quotidien jour="mardi"/>\n    <quotidien jour="mercredi"/>\n    <quotidien jour="jeudi"/>\n    ' +
+                         '<quotidien jour="vendredi"/>\n    <quotidien jour="samedi"/>\n    <quotidien jour="dimanche"/>\n  </chauffage>\n</remidomo>\n', config.to_xml())
 
 
 if __name__ == '__main__':

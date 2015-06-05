@@ -1,0 +1,60 @@
+.content {
+    margin-top: 1em;
+    width: 95%;
+}
+
+.buttons {
+    display: inline;
+    // Remove left margin (default for all buttons)
+    margin-left: -16px;
+}
+
+.schedule {
+    margin-top: 1em;
+    text-align: center;
+}
+
+.slider-container {
+    display: table-row;
+    vertical-align: middle;
+}
+
+.temperature-slider {
+    display: table-cell;
+    width: 20em;
+    vertical-align: middle;
+}
+
+.temperature-label {
+    display: table-cell;
+    width: 2.5em;
+    font-size: 2em;
+    text-align: left;
+    padding-left: 0.5em;
+}
+
+.temperature-units {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.saving {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.saving-error {
+    font-style: italic;
+    text-align: center;
+}
+
+.range-info {
+    height: 1em;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Override active state for power button (to be the same as default) */
+#power-button.ui-state-active {
+    background: #e6e6e6 url("/static/js/images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50%
+}

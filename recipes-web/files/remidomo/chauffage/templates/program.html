@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static "css/program.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "css/custom-icons.css" %}" />
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.2.0/vis.min.css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.2.0/vis.min.js"></script>
+{% endblock %}
+
+{% block title %}Programmation{% endblock %}
+
+{% block content %}
+
+<div class="buttons" id="buttons">
+    <label for="power" class="button" id="power-button"></label>
+    <input type="checkbox" id="power"/>
+
+    <div class="button" id="refresh">&nbsp;</div>
+    <div class="button" id="save">&nbsp;</div>
+</div>
+
+<div class="range-info" id="range-info"></div>
+<div class="schedule" id="schedule"></div>
+
+<div id="dialog-consigne" title="Consigne">
+    <div class="slider-container">
+        <div class="temperature-slider">
+            <div id="temperature-slider" class="temperature-slider"></div>
+        </div>
+        <div id="temperature-label" class="temperature-label"></div>
+        <div class="temperature-units">&deg;C</div>
+    </div>
+</div>
+
+<div id="save-success" title="Confirmation">
+    <div class="saving">Calendrier sauvegard&eacute;.</div>
+</div>
+<div id="save-failure" title="Erreur !">
+    <div class="saving">Modifications non appliqu&eacute;es :</div>
+    <div id="save-failure-msg" class="saving-error"></div>
+</div>
+{% endblock %}
+
+{% block script %}
+    $('#power').button({
+        icons: {
+            primary: "custom-icon-off"
+        },
+        text: false
+    }).change(function() {
+        $(this).button("option", {
+            icons: { primary: this.checked ? 'custom-icon-on' : 'custom-icon-off' }
+        });
+    });
+    $('#refresh').button({
+        icons: {
+            primary: "custom-icon-refresh"
+        },
+        text: false
+    }).click(function() {
+        window.location.reload();
+    });
+    $('#save').button({
+        icons: {
+            primary: "custom-icon-check"
+        },
+        text: false
+    }).click(function() {
+        $('#save').button("disable");
+        $.ajax({ url: '/chauffage/program/post',
+                 type: 'POST',
+                 data: { csrfmiddlewaretoken: '{{ csrf_token }}',
+                         items: JSON.stringify(items.get()),
+                       },
+                 success: function(response) {
+                    if (response.status == 'updated') {
+                        $('#save-success').dialog("open");
+                    } else {
+                        $('#save-failure-msg').html(response.status);
+                        $('#save-failure').dialog("open");
+                    }
+                    $('#save').button("enable");
+                 },
+                 error: function(xhr, textStatus, thrownError) {
+                    $('#save-failure-msg').html(xhr.status + ": " + xhr.responseText);
+                    $('#save-failure').dialog("open");
+                    $('#save').button("enable");
+                 }
+        });
+    });
+
+    $('#dialog-consigne').dialog({
+        modal: true,
+        autoOpen: false,
+        draggable: true,
+        resizable: false,
+        width: 'auto',
+        buttons: {
+            Ok: function() {
+                $(this).trigger("submit");
+                $(this).dialog("close");
+            }
+        }
+    });
+    $('#temperature-slider').slider({
+        min: 10,
+        max: 30,
+        step: 0.5,
+        slide: function(event, ui) {
+            $('#temperature-label').html(ui.value.toFixed(1));
+        },
+        change: function(event, ui) {
+            $('#temperature-label').html(ui.value.toFixed(1));
+        }
+    });
+
+    add_function = function(item, callback) {
+        check_item_range(item);
+        edit_function(20, item, callback);
+    }
+
+    update_function = function(item, callback) {
+        edit_function(parseFloat(item.content), item, callback);
+    }
+
+    edit_function = function(init, item, callback) {
+        // Init value for the dialog (actual value or default)
+        $('#temperature-slider').slider('value', init);
+
+        // Callback to set new item value if/when dialog submitted
+        $('#dialog-consigne').one('submit', function(event, ui) {
+            item.content = $('#temperature-slider').slider('value');
+            callback(item);
+        });
+
+        // Fire dialog
+        $('#dialog-consigne').dialog("open");
+    }
+
+    moving_function = function(item, callback) {
+        check_item_range(item);
+        display_range_info(item);
+        callback(item);
+    }
+
+    remove_function = function(item, callback) {
+        clear_range_info();
+        callback(item);
+    }
+
+    clear_range_info = function() {
+        $('#range-info').html('');
+    }
+
+    display_range_info = function(item) {
+        if (item.start instanceof Date) {
+            start_str = item.start.toString();
+        } else {
+            start_str = item.start;
+        }
+        if (item.end instanceof Date) {
+            end_str = item.end.toString();
+        } else {
+            end_str = item.end;
+        }
+        var regexp = "\\S+ \\S+ \\d+ \\d+ (\\d+:\\d+):\\d+ \\S+ \\S+"
+        msg = start_str.match(regexp)[1] + " &#8594; " + end_str.match(regexp)[1];
+        $('#range-info').html(msg);
+    }
+
+    check_item_range = function(item) {
+        if (item.start < new Date(0, 0, 0, 0, 0)) {
+            item.start = new Date(0, 0, 0, 0, 0)
+        }
+        if (item.end > new Date(0, 0, 0, 23, 59)) {
+            item.end = new Date(0, 0, 0, 23, 59)
+        }
+    }
+
+    $('#save-success').dialog({
+        modal: true,
+        autoOpen: false,
+        draggable: true,
+        resizable: false,
+        width: 'auto',
+        buttons: {
+            Ok: function() { $(this).dialog("close"); }
+        }
+    });
+    $('#save-failure').dialog({
+        modal: true,
+        autoOpen: false,
+        draggable: true,
+        resizable: false,
+        width: 'auto',
+        buttons: {
+            Ok: function() { $(this).dialog("close"); }
+        }
+    });
+
+    var options = {
+        start: new Date(0, 0, 0, 0, 0),
+        min: new Date(0, 0, 0, 0, 0),
+        end: new Date(0, 0, 0, 23, 59),
+        max: new Date(0, 0, 0, 23, 59),
+        type: 'range',
+        zoomable: false,
+        editable: true,
+        stack: false,
+        timeAxis: { scale: 'hour', step: 2 },
+        showMajorLabels: false,
+        onUpdate: update_function,
+        onAdd: add_function,
+        onMoving: moving_function,
+        onRemove: remove_function,
+    }
+
+    var groups = [
+        {% for day in days %}
+            { id: {{ forloop.counter }}, content: '{{ day.name|capfirst }}' },
+        {% endfor %}
+    ];
+
+    var items = new vis.DataSet([
+        {% for day in days %}
+            // {{ day.name }}
+            {% for order in day.schedule.get_orders %}
+                {id: {{ iterator.next }}, content: {{ order.get_value }}, start: {{ order.get_begin_js }}, end: {{ order.get_end_js }}, group: {{ forloop.parentloop.counter }} },
+            {% endfor %}
+        {% endfor %}
+    ], {
+        type: { start: 'String',
+                end: 'String',
+                content: 'String',
+              }
+    });
+
+    var chart = new vis.Timeline(document.getElementById('schedule'), items, groups, options);
+    chart.on('select', function(properties) {
+        if (properties.items.length == 0) {
+            clear_range_info()
+        } else {
+            item_id = properties.items[0]
+            item = items.get(item_id)
+            display_range_info(item);
+        }
+    });
+{% endblock %}

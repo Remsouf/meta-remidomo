@@ -29,3 +29,8 @@
     margin-top: 1em;
     width: 95%;
 }
+
+.buttons {
+    display: inline;
+    padding-top: 2em;
+}

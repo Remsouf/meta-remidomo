@@ -34,24 +34,33 @@ class Schedule:
     def is_empty(self):
         return self.get_orders_nb() == 0
 
-    def append(self, order):
-        self.orders.append(order)
+    def get_orders(self):
+        return self.orders
 
 
 """
 An order, i.e. a time range and a value
 """
 class Order:
-    def __init__(self):
-        self.begin = None
-        self.end = None
-        self.value = None
+    def __init__(self, begin=None, end=None, value=None):
+        self.begin = begin
+        self.end = end
+        self.value = value
+
+    def __time_to_js(self, time):
+        return 'new Date(0,0,0,%d,%d)' % (time.hour, time.minute)
 
     def get_begin(self):
         return self.begin
 
+    def get_begin_js(self):
+        return self.__time_to_js(self.begin)
+
     def get_end(self):
         return self.end
+
+    def get_end_js(self):
+        return self.__time_to_js(self.end)
 
     def get_value(self):
         return self.value
@@ -92,6 +101,15 @@ class Order:
         except ValueError:
             raise ParseError('Bad order value "%s"' % attr)
 
+    def generateXml(self, node):
+        node.set(ATTRIB_BEGIN, self.get_begin().strftime('%H:%M'))
+
+        # If end_time is the end of day (00:00 the day after), decrease one minute
+        end_time = self.get_end()
+        if end_time.hour == 0 and end_time.minute == 0:
+            end_time.replace(hour=23, minute=59)
+        node.set(ATTRIB_END, end_time.strftime('%H:%M'))
+        node.set(ATTRIB_VALUE, str(self.get_value()))
 
 if __name__ == '__main__':
     unittest.main()

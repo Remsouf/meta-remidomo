@@ -1,13 +1,26 @@
 import datetime
-import dateutil.tz
+import logging
+import os
+import dateutil.tz, dateutil.parser
 import json
+import sys
 
 from django.http import HttpResponse
 from django.shortcuts import render
+import itertools
+import signal
 from models import Mesure
+
+sys.path.append('../../recipes-service/files')
+sys.path.append('/usr/lib/remidomo/service')
+from config import Config
+from orders import Order
 
 # TODO: Read those from config... (but when ?)
 SENSORS = ('terrasse', 'salon')
+
+CONFIG_FILE = '/etc/remidomo.xml'
+SERVICE_PID_FILE = '/var/run/remidomo.pid'
 
 def __elapsed_time(timestamp):
     delta = datetime.datetime.now(timestamp.tzinfo) - timestamp
@@ -40,9 +53,66 @@ def status(request):
     context = {'data': sensor_data}
     return render(request, 'status.html', context)
 
-def programmation(request):
-    context = {}
-    return render(request, 'prog.html', context)
+def program(request):
+    config = Config(logging.getLogger('django'))
+
+    week_data = []
+
+    try:
+        config.read_file(CONFIG_FILE)
+
+        for index, day in enumerate(config.get_day_names()):
+            week_data.append({'name': day,
+                              'schedule' : config.get_schedule(index)})
+    except IOError:
+        for day in config.get_day_names():
+            week_data.append({'name': day,
+                              'schedule' : None})
+
+    context = { 'days': week_data,
+                'iterator': itertools.count()}
+    return render(request, 'program.html', context)
+
+def program_post(request):
+    config = Config(logging.getLogger('django'))
+    config.read_file(CONFIG_FILE)
+
+    if request.is_ajax():
+        json_items = request.POST.get('items', None)
+        if json_items is None:
+            return HttpResponse(json.dumps(dict(status='Pas de calendrier')), content_type='application/json')
+
+        try:
+            items = json.loads(json_items)
+        except ValueError:
+            return HttpResponse(json.dumps(dict(status='Donnees invalides: %s' % items)), content_type='application/json')
+
+        config.clear_schedules()
+        for time_range in items:
+            day_index = time_range['group'] - 1
+            start_time = dateutil.parser.parse(time_range['start']).time()
+            end_time = dateutil.parser.parse(time_range['end']).time()
+            value = float(time_range['content'])
+
+            order = Order(start_time, end_time, value)
+            config.add_order(day_index, order)
+
+        # Once done, save config file and restart service
+        config.save(CONFIG_FILE)
+        service_pid = __get_service_pid()
+        if service_pid is None:
+            return HttpResponse(json.dumps(dict(status='Service down')), content_type='application/json')
+
+        logging.getLogger('django').info('Sending SIGHUP to pid %d' % service_pid)
+        try:
+            os.kill(service_pid, signal.SIGHUP)
+        except OSError, e:
+            logging.getLogger('django').error('Failed reloading service configuration : %s' % e.strerror)
+            return HttpResponse(json.dumps(dict(status='Service PID not consistent')), content_type='application/json')
+
+        return HttpResponse(json.dumps(dict(status='updated')), content_type='application/json')
+    else:
+        return HttpResponse(json.dumps(dict(status='Not Ajax')), content_type='application/json')
 
 def graph(request, dataset_name):
     local_tz = dateutil.tz.tzlocal()
@@ -67,6 +137,16 @@ def __python_date_to_js(timestamp):
                                         timestamp.hour,
                                         timestamp.minute,
                                         timestamp.second)
+
+def __get_service_pid():
+    try:
+        with open(SERVICE_PID_FILE, 'r') as f:
+            lines = f.readlines()
+            pid = int(lines[0].strip())
+            return pid
+    except IOError, e:
+        logging.getLogger('django').error('Failed to get service PID : %s', e.strerror)
+        return None
 
 """
 Return graph data in JSON format
