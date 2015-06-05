@@ -53,8 +53,14 @@ other layers needed. e.g.:
     /path/to/yocto/meta-remidomo \
     "
 
+Don't forget to add the layers mentioned above in dependencies.
+
 
 II. Misc
 ========
 
---- replace with specific information about the remidomo layer ---
+You will need to edit the local.conf file to add the following variables :
+WIFI_SSID
+WIFI_PASSWORD (leave empty for open networks)
+DJANGO_ADMIN_PASSWORD
+ROOT_PASSWORD
