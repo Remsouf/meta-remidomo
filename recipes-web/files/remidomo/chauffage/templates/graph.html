@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static "css/graph.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "css/custom-icons.css" %}" />
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+{% endblock %}
+
+{% block title %}{{ name }}{% endblock %}
+
+{% block content %}
+<div class="frame" id="frame">
+    <div class="title" id="title">
+    {% if dataset_name != 'all' %}
+        {{ dataset_name|capfirst }}
+    {% endif %}
+    </div>
+    <div class="graph" id="graph"></div>
+</div>
+{% endblock %}
+
+{% block script %}
+$('#frame').position({
+    my: "center",
+    at: "center",
+    of: "#content"
+});
+
+google.load("visualization", "1.0", {packages:["corechart", 'annotatedtimeline']});
+google.setOnLoadCallback(drawChart);
+
+function drawChart() {
+
+    var TZ = 2 * {{ time_offset }};
+
+    var temp_formatter = new google.visualization.NumberFormat({fractionDigits:1, suffix:' \u00B0C'});
+    var date_formatter = new google.visualization.DateFormat({pattern: 'd MMM \u00E0 H:mm', timeZone: TZ});
+    var js_data = $.ajax({ url: "/chauffage/graph/data/{{ dataset_name }}",
+                           dataType:"json",
+                           async: false
+                         }).responseText;
+
+    var data = new google.visualization.DataTable(js_data);
+
+    date_formatter.format(data, 0);
+
+    {% for name in names %}
+        temp_formatter.format(data, {{ forloop.counter }});
+    {% endfor %}
+
+    var options = {
+        titlePosition: 'none',
+        backgroundColor: 'white',
+        legend: { position: 'bottom' },
+        axisTitlesPosition: 'in',
+        lineWidth: 1,
+        chartArea: { width: '95%',
+                     height: '90%' },
+        hAxis: { gridlines: { color: '#888888' },
+                 maxTextLines: 5,
+                 titleTextStyle: {color: '#555555' },
+        },
+        vAxis: { title: '\u00B0C',
+                 gridlines: { color: '#888888' },
+                 minorGridlines: { count: 2, color:'#bbbbbb' }
+        },
+        series: [ { color: '#880000', visibleInLegend: {% if dataset_name == 'all' %}true{% else %}false{% endif %} },
+                  { color: '#000088', visibleInLegend: true },
+                  { color: '#008800', visibleInLegend: true } ]
+    };
+
+    var chart = new google.visualization.LineChart(document.getElementById('graph'));
+    chart.draw(data, options);
+}
+{% endblock %}
+

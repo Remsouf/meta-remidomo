@@ -1,0 +1,19 @@
+.title {
+    font-size: 3em;
+    font-family: arial;
+    font-style: italic;
+    text-align: center;
+}
+
+.graph {
+    height: 100%;
+}
+
+.frame {
+    height: 30em;
+}
+
+.content {
+    margin-top: 1em;
+    width: 95%;
+}

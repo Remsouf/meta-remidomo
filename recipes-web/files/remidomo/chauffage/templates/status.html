@@ -12,7 +12,7 @@
 <div class="temp_status" id="temp_status">
     {% for sensor in data %}
     <div class="frame-spacer">
-        <div class="frame">
+        <div class="frame" id="{{ sensor.name }}">
             <div class="label">{{ sensor.name }}</div>
             <div style="display: table-row;">
                 <div class="temperature">{{ sensor.temp }}</div>
@@ -25,6 +25,7 @@
 </div>
 
 <div class="buttons" id="buttons">
+    <div class="button" id="graphs">&nbsp;</div>
     <div class="button" id="schedule">&nbsp;</div>
     <div class="button" id="refresh">&nbsp;</div>
 </div>
@@ -35,6 +36,14 @@
         my: "center",
         at: "center",
         of: "#content"
+    });
+    $('#graphs').button({
+        icons: {
+            primary: "custom-icon-graphs"
+        },
+        text: false
+    }).click(function() {
+        window.location.href="/chauffage/graph/all";
     });
     $('#schedule').button({
         icons: {
@@ -57,5 +66,10 @@
         at: "bottom",
         of: "#content"
     });
+    {% for sensor in data %}
+        $('#{{ sensor.name }}').click(function() {
+            window.location.href="/chauffage/graph/{{ sensor.name|lower }}";
+        });
+    {% endfor %}
 {% endblock %}
 

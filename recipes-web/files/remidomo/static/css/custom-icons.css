@@ -1,6 +1,6 @@
 .buttons {
     display: inline;
-    padding-top: 5em;
+    padding-top: 8em;
 }
 
 .button {
@@ -8,6 +8,18 @@
     height: 48px;
     margin-left: 16px;
     margin-right: 16px;
+}
+
+.ui-button .ui-icon.custom-icon-graphs {
+    background-image: url(/static/images/graphs.png);
+    width: 48px;
+    height: 48px;
+    left: 16px;
+    top: 16px;
+}
+
+.ui-button .ui-icon.custom-icon-graphs:hover {
+    background-image: url(/static/images/graphs-hover.png);
 }
 
 .ui-button .ui-icon.custom-icon-refresh {

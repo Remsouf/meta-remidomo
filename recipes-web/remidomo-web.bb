@@ -3,7 +3,7 @@ SUMMARY = "Remidomo web server"
 LICENSE = "CC-BY-NC-3.0"
 PR = "r0"
 
-RDEPENDS_${PN} = "bash python python-django python-modules python-misc python-flup"
+RDEPENDS_${PN} = "bash python python-django python-modules python-misc python-flup python-dateutil"
 
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/CC-BY-NC-3.0;md5=da665b47544b8cf138600d9e2aeefadd"
 
