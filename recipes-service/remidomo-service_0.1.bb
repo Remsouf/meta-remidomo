@@ -14,6 +14,7 @@ SRC_URI = "file://remidomo \
            file://executor.py \
            file://rfx_listener.py \
            file://xpl_msg.py \
+           file://database.py \
            file://remidomo-default-config.xml \
 	  "
 
@@ -24,6 +25,7 @@ FILES_${PN} += "${bindir}/remidomo.py \
                 ${libdir}/remidomo/service/executor.py \
                 ${libdir}/remidomo/service/rfx_listener.py \
                 ${libdir}/remidomo/service/xpl_msg.py \
+                ${libdir}/remidomo/service/database.py \
                 ${sysconfdir}/remidomo.xml \
                "
 
@@ -54,6 +56,7 @@ do_install() {
     install -d ${D}/${bindir}
     sed -e "s,##REMIDOMO_VERSION##,${PV},g" \
         ${WORKDIR}/remidomo.py > ${D}${bindir}/remidomo.py
+    chmod 0755 ${D}${bindir}/remidomo.py
 
     install -d ${D}/${sysconfdir}
     install -m 0644 ${WORKDIR}/remidomo-default-config.xml ${D}/${sysconfdir}/remidomo.xml

@@ -5,8 +5,7 @@ import logging
 import re
 
 SERVICE_LOGFILE = '/var/log/remidomo.log'
-DJANGO_LOGFILE = ''
-FASTCGI_LOGFILE = ''
+DJANGO_LOGFILE = '/tmp/web.log'
 NGINX_ERROR_LOGFILE = '/var/log/nginx-error.log'
 NGINX_ACCESS_LOGFILE = '/var/log/nginx-access.log'
 
@@ -48,7 +47,7 @@ def about(request):
 
 def logs(request):
     context = { 'service_log': get_log(SERVICE_LOGFILE, 'service'),
-                'django_log': get_log('', 'Django'),
+                'django_log': get_log(DJANGO_LOGFILE, 'Django'),
                 'nginx_error_log': get_log(NGINX_ERROR_LOGFILE, 'nginx error'),
                 'nginx_access_log': get_log(NGINX_ACCESS_LOGFILE, 'nginx access')}
     return render(request, 'logs.html', context)

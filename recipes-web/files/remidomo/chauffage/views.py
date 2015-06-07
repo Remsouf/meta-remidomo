@@ -23,7 +23,7 @@ def status(request):
     sensor_data = []
     for sensor_name in SENSORS:
         rows = Mesure.objects.filter(name=sensor_name).order_by('-timestamp')
-        if rows is None:
+        if rows is None or len(rows) == 0:
             current_temp = '?'
             since_when = ''
         else:

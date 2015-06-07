@@ -22,6 +22,7 @@ DJANGO_SITES="web"
 SITES_PATH=/usr/lib/remidomo
 # Can't point to /var/run, as www-data wouldn't be able to create pid file...
 RUNFILES_PATH=/tmp
+LOGFILES_PATH=/tmp
 HOST=127.0.0.1
 PORT_START=8080
 RUN_AS=www-data
@@ -50,6 +51,7 @@ d_start()
         if [ ! -f $DB_FILE ]; then
             python $SITES_PATH/$SITE/manage.py syncdb --noinput
             echo "from django.contrib.auth.models import User; User.objects.create_superuser('root', 'root@root.com', '##ADMIN_PASSWORD##')" | python $SITES_PATH/$SITE/manage.py shell
+            chmod 0666 $DB_FILE
         fi
 
         if [ -f $RUNFILES_PATH/$SITE.pid ]; then
@@ -60,7 +62,8 @@ d_start()
                        --chuid $RUN_AS --exec /usr/bin/env -- python \
                        $SITES_PATH/$SITE/manage.py runfcgi \
                        method=$FCGI_METHOD \
-                       host=$HOST port=$PORT pidfile=$RUNFILES_PATH/$SITE.pid
+                       host=$HOST port=$PORT pidfile=$RUNFILES_PATH/$SITE.pid \
+                       outlog=$LOGFILES_PATH/$SITE.log errlog=$LOGFILES_PATH/$SITE.err
             chmod 400 $RUNFILES_PATH/$SITE.pid
         fi
         let "PORT = $PORT + 1"
