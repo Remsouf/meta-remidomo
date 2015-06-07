@@ -6,7 +6,7 @@ from models import Mesure
 SENSORS = ('terrasse', 'salon')
 
 def __elapsed_time(timestamp):
-    delta = datetime.datetime.now() - timestamp.replace(tzinfo=None)
+    delta = datetime.datetime.now(timestamp.tzinfo) - timestamp
 
     if delta.total_seconds() < 30:
         return "A l'instant"
