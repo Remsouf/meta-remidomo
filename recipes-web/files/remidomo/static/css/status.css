@@ -3,7 +3,6 @@
 }
 
 .frame-spacer {
-    background: solid black;
     display: table-cell;
     border-spacing: 5px;
 }
@@ -16,25 +15,9 @@
     margin-right: 40px;
 }
 
-.label {
-    font-style: italic;
-    font-size: 1.5em;
-    text-align: center;
-}
-
-.temperature {
-    display: table-cell;
-    text-align: center;
-    margin: 0 auto;
-    font-size: 4em;
-    font-family: arial;
-}
-
-.units {
-    display: table-cell;
-    vertical-align: top;
-    padding-top: 0.75em;
-    font-weight: bold;
+.gauge {
+    width: 200px;
+    height: 200px;
 }
 
 .ilya {
@@ -43,6 +26,6 @@
 }
 
 .content {
-    margin-top: 3em;
+    margin-top: 1em;
     width: 95%;
 }

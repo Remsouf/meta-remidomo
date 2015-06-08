@@ -4,6 +4,7 @@
 {% block extrastyle %}
 <link rel="stylesheet" type="text/css" href="{% static "css/status.css" %}" />
 <link rel="stylesheet" type="text/css" href="{% static "css/custom-icons.css" %}" />
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 {% endblock %}
 
 {% block title %}Tableau de bord{% endblock %}
@@ -12,12 +13,8 @@
 <div class="temp_status" id="temp_status">
     {% for sensor in data %}
     <div class="frame-spacer">
-        <div class="frame" id="{{ sensor.name }}">
-            <div class="label">{{ sensor.name }}</div>
-            <div style="display: table-row;">
-                <div class="temperature">{{ sensor.temp }}</div>
-                <div class="units">&deg;C</div>
-            </div>
+        <div class="frame" id="frame-{{ sensor.name }}">
+            <div class="gauge" id="gauge-{{ sensor.name }}"></div>
             <div class="ilya">{{ sensor.since_when }}</div>
         </div>
     </div>
@@ -32,11 +29,6 @@
 {% endblock %}
 
 {% block script %}
-    $('#temp_status').position({
-        my: "center",
-        at: "center",
-        of: "#content"
-    });
     $('#graphs').button({
         icons: {
             primary: "custom-icon-graphs"
@@ -66,10 +58,53 @@
         at: "bottom",
         of: "#content"
     });
+    $('#temp_status').position({
+        my: "center",
+        at: "center",
+        of: "#content"
+    });
     {% for sensor in data %}
-        $('#{{ sensor.name }}').click(function() {
+        $('#frame-{{ sensor.name }}').click(function() {
             window.location.href="/chauffage/graph/{{ sensor.name|lower }}";
         });
     {% endfor %}
+
+    google.load("visualization", "1.0", {packages:["gauge"]});
+    google.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+
+        // Options are common to all gauges
+        var options = {
+            animation: { startup: true,
+                         duration: 1000,
+                         easing: 'out'},
+            width: 200, height: 200,
+            min: -20, max: 40,
+            greenFrom: -20, greenTo: 0, greenColor: '#aaaaff',
+            yellowFrom: 27, yellowTo: 40, yellowColor: '#ffe773',
+            minorTicks: 5
+        };
+
+        {% for sensor in data %}
+            var data_{{ sensor.name }} = google.visualization.arrayToDataTable([
+                ['Label', 'Value'],
+                ['{{ sensor.name }}', -20],
+            ]);
+
+            var chart_{{ sensor.name }} = new google.visualization.Gauge(document.getElementById('gauge-{{ sensor.name }}'));
+            chart_{{ sensor.name }}.draw(data_{{ sensor.name }}, options);
+        {% endfor %}
+
+        setTimeout(function() {
+            {% for sensor in data %}
+                var data_{{ sensor.name }} = google.visualization.arrayToDataTable([
+                    ['Label', 'Value'],
+                    ['{{ sensor.name }}', {{ sensor.temp }}],
+                ]);
+                chart_{{ sensor.name }}.draw(data_{{ sensor.name }}, options);
+            {% endfor %}
+        }, 200);
+    }
 {% endblock %}
 
