@@ -1,14 +1,14 @@
 require recipes-core/images/rpi-basic-image.bb
 
-IMAGE_INSTALL += "remidomo-service remidomo-web nginx ntp wpa-supplicant tzdata"
+IMAGE_INSTALL += "remidomo-service remidomo-web nginx ntp wpa-supplicant tzdata cronie"
 
 IMAGE_LINGUAS = "fr-fr en-us"
 
 ROOTFS_PREPROCESS_COMMAND += "check_vars;"
-ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant;"
+ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant; set_crontab;"
 
 python check_vars() {
-    for var in ('WIFI_SSID', 'WIFI_PASSWORD', 'ROOT_PASSWORD'):
+    for var in ('WIFI_SSID', 'WIFI_PASSWORD', 'ROOT_PASSWORD', 'ROUTER_ADDR'):
         if bb.data.getVar(var, d, False) is None:
             bb.error('Please provide %s variable, for example in local.conf' % var)
 }
@@ -55,4 +55,10 @@ python set_wpa_supplicant() {
         else:
             f.write('  key_mgmt=NONE\n')
         f.write('}\n')
+}
+
+set_crontab() {
+    sed -e "s,##ROUTER_ADDR##,${ROUTER_ADDR}," \
+                ${IMAGE_ROOTFS}/${sysconfdir}/crontab > ${IMAGE_ROOTFS}/${sysconfdir}/crontab.new
+    mv ${IMAGE_ROOTFS}/${sysconfdir}/crontab.new ${IMAGE_ROOTFS}/${sysconfdir}/crontab
 }

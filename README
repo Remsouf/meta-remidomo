@@ -64,5 +64,6 @@ WIFI_SSID
 WIFI_PASSWORD (leave empty for open networks)
 DJANGO_ADMIN_PASSWORD
 ROOT_PASSWORD
+ROUTER_ADDR
 
 It also a good idea to add DEFAULT_TIMEZONE="Europe/Paris" to local.conf
