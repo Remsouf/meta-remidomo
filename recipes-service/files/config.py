@@ -239,6 +239,7 @@ class Config:
         reparsed = minidom.parseString(string)
         return reparsed.toprettyxml(indent="  ")
 
+
 class TestConfig(unittest.TestCase):
     DECIMAL_COMPARE_PLACES = 3
 

@@ -3,9 +3,11 @@
 
 import logging
 from optparse import OptionParser
+import os
 import sys
 import time
 import datetime
+import signal
 
 sys.path.append('/usr/lib/remidomo/service')
 
@@ -92,13 +94,22 @@ def main():
 
     # Main loop
     logger.info('Démarrage')
-    config = Config(logger)
-    config.read_file(options.config)
-    executor = Executor(config, logger)
-    database = Database(config, logger)
-    rfx_listener = RFXListener(config, logger)
-    rfx_listener.start()
+
+    config_timestamp = None
+    rfx_listener = None
     while 1:
+        file_timestamp = os.path.getmtime(options.config)
+        if config_timestamp is None or config_timestamp != file_timestamp:
+            if rfx_listener is not None:
+                rfx_listener.stop()
+                time.sleep(15)
+            config = Config(logger)
+            config.read_file(options.config)
+            executor = Executor(config, logger)
+            rfx_listener = RFXListener(config, logger)
+            rfx_listener.start()
+            config_timestamp = file_timestamp
+
         try:
             check_orders(logger, config, executor, rfx_listener)
             time.sleep(60)
