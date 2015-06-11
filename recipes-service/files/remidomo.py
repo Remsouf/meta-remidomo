@@ -17,8 +17,9 @@ from executor import Executor
 from rfx_listener import RFXListener
 
 VERSION = '##REMIDOMO_VERSION##'
+MEASUREMENT_AGE = 60 * 30  # 30min
 
-def check_orders(logger, config, executor, rfx_listener):
+def check_orders(logger, config, executor, database):
     # Get the schedule for today
     today = datetime.date.today().weekday()
     schedule = config.get_schedule(today)
@@ -38,10 +39,15 @@ def check_orders(logger, config, executor, rfx_listener):
     # Execute order, depending on temperature
     sensor_name = config.get_heating_sensor_name()
     sensor_id = config.get_sensor_id(sensor_name)
-    #current_temperature = get_sensor_value(sensor_id)
-    current_temperature = None
+    last_measure_time, current_temperature = database.query_latest(sensor_id)
     if current_temperature is None:
         logger.info('Current temperature is not known')
+        executor.heating_poweroff()
+        return
+
+    age = datetime.datetime.now() - last_measure_time
+    if age.total_seconds() > MEASUREMENT_AGE:
+        logger.info('Current temperature is too old (%s), considering unreliable' % age)
         executor.heating_poweroff()
         return
 
@@ -49,10 +55,10 @@ def check_orders(logger, config, executor, rfx_listener):
     high_limit = order.get_value() + config.get_hysteresis_over()
 
     if current_temperature < low_limit:
-        logger.debug('Temperature %d < %d' % (current_temperature, low_limit))
+        logger.debug('Temperature %.01f < %.01f' % (current_temperature, low_limit))
         executor.heating_poweron()
     if current_temperature > high_limit:
-        logger.debug('Temperature %d > %d' % (current_temperature, high_limit))
+        logger.debug('Temperature %.01f > %.01f' % (current_temperature, high_limit))
         executor.heating_poweroff()
 
     # Else, no state change
@@ -105,13 +111,14 @@ def main():
                 time.sleep(15)
             config = Config(logger)
             config.read_file(options.config)
+            database = Database(config, logger)
             executor = Executor(config, logger)
             rfx_listener = RFXListener(config, logger)
             rfx_listener.start()
             config_timestamp = file_timestamp
 
         try:
-            check_orders(logger, config, executor, rfx_listener)
+            check_orders(logger, config, executor, database)
             time.sleep(60)
         except KeyboardInterrupt:
             print >> sys.stderr, '\nExiting by user request.\n'

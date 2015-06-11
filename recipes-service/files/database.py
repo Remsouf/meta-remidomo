@@ -7,6 +7,7 @@ Class to access the database storing our results
 import sqlite3
 import time
 import math
+import datetime
 
 DB_PATH = '/var/remidomo/db.sqlite3'
 TABLE_NAME = 'chauffage_mesure'
@@ -66,6 +67,18 @@ class Database:
         self.connection.execute('INSERT INTO %s(name, address, timestamp, value, units) VALUES("%s", "%s", datetime("now"), %f, "%s")' % (TABLE_NAME, name, device, value, units))
         self.connection.commit()
         self.__close()
+
+    def query_latest(self, device):
+        self.logger.debug('Query DB for %s' % device)
+        self.__connect()
+        cursor = self.connection.cursor()
+        cursor.execute('SELECT strftime("%%s", timestamp), value FROM %s WHERE address="%s" ORDER BY timestamp DESC LIMIT 1' % (TABLE_NAME, device))
+        data = cursor.fetchone()
+
+        if data is None:
+            return None, None
+        else:
+            return datetime.datetime.fromtimestamp(int(data[0])), float(data[1])
 
     def __close(self):
         if self.connection is not None:
