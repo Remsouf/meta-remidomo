@@ -59,7 +59,7 @@ do_install() {
     chmod 0755 ${D}${bindir}/remidomo.py
 
     install -d ${D}/${sysconfdir}
-    install -m 0644 ${WORKDIR}/remidomo-default-config.xml ${D}/${sysconfdir}/remidomo.xml
+    install -m 0666 ${WORKDIR}/remidomo-default-config.xml ${D}/${sysconfdir}/remidomo.xml
 
     install -d ${D}/${libdir}/remidomo/service
     install -m 0644 ${WORKDIR}/config.py ${D}/${libdir}/remidomo/service
