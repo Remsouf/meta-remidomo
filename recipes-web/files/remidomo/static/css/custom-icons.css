@@ -72,3 +72,27 @@
 .ui-button .ui-icon.custom-icon-on:hover, .ui-icon.custom-icon-off:hover {
     background-image: url(/static/images/led-hover.png);
 }
+
+.ui-button .ui-icon.custom-icon-delete {
+    background-image: url(/static/images/delete.png);
+    width: 24px;
+    height: 24px;
+    left: 8px;
+    top: 8px;
+}
+
+.ui-button .ui-icon.custom-icon-delete:hover {
+    background-image: url(/static/images/delete-hover.png);
+}
+
+.ui-button .ui-icon.custom-icon-add {
+    background-image: url(/static/images/add.png);
+    width: 24px;
+    height: 24px;
+    left: 8px;
+    top: 8px;
+}
+
+.ui-button .ui-icon.custom-icon-add:hover {
+    background-image: url(/static/images/add-hover.png);
+}

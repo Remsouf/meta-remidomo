@@ -100,16 +100,6 @@ def program_post(request):
 
         # Once done, save config file and restart service
         config.save(CONFIG_FILE)
-        service_pid = __get_service_pid()
-        if service_pid is None:
-            return HttpResponse(json.dumps(dict(status='Service down')), content_type='application/json')
-
-        logging.getLogger('django').info('Sending SIGHUP to pid %d' % service_pid)
-        try:
-            os.kill(service_pid, signal.SIGHUP)
-        except OSError, e:
-            logging.getLogger('django').error('Failed reloading service configuration : %s' % e.strerror)
-            return HttpResponse(json.dumps(dict(status='Service PID not consistent')), content_type='application/json')
 
         return HttpResponse(json.dumps(dict(status='updated')), content_type='application/json')
     else:
@@ -134,6 +124,60 @@ def graph(request, dataset_name):
                 'dataset_name': dataset_name,
                 'time_offset': local_offset_hours }
     return render(request, 'graph.html', context)
+
+def config(request):
+    config = __get_config()
+    if config is None:
+        # Not having a config file is acceptable here
+        config = Config(logging.getLogger('django'))
+
+    context = { 'rfxport': config.get_rfxlan_port(),
+                'sensors': config.get_sensors(),
+                'pos_hysteresis': config.get_hysteresis_over(),
+                'neg_hysteresis': config.get_hysteresis_under(),
+                'ref_sensor': config.get_heating_sensor_name(),
+              }
+    return render(request, 'config.html', context)
+
+def config_post(request):
+    config = __get_config()
+    if config is None:
+        # Not having a config file is acceptable here
+        config = Config(logging.getLogger('django'))
+
+    if request.is_ajax():
+        json_sensors = request.POST.get('sensors', None)
+        config.clear_sensors()
+        if json_sensors is not None:
+            try:
+                sensors = json.loads(json_sensors)
+                for sensor in sensors:
+                    config.add_sensor(sensor['name'], sensor['addr'])
+
+                    if sensor['is_ref']:
+                        config.set_heating_sensor_name(sensor['name'])
+
+            except ValueError:
+                return HttpResponse(json.dumps(dict(status='Donnees capteurs invalides: %s' % sensors)), content_type='application/json')
+
+        port = request.POST.get('rfxport', None)
+        if port is not None:
+            config.set_rfxlan_port(port)
+
+        hysteresis_over = request.POST.get('pos_hysteresis', None)
+        if hysteresis_over is not None:
+            config.set_hysteresis_over(hysteresis_over)
+
+        hysteresis_under = request.POST.get('neg_hysteresis', None)
+        if hysteresis_under is not None:
+            config.set_hysteresis_under(hysteresis_under)
+
+        # Once done, save config file
+        config.save(CONFIG_FILE)
+
+        return HttpResponse(json.dumps(dict(status='updated')), content_type='application/json')
+    else:
+        return HttpResponse(json.dumps(dict(status='Not Ajax')), content_type='application/json')
 
 def __python_date_to_js(timestamp):
     return 'Date(%d,%d,%d,%d,%d,%d)' % (timestamp.year,

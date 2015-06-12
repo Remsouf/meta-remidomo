@@ -1,0 +1,67 @@
+.content {
+    margin-top: 10px;
+    width: 95%;
+}
+
+.buttons {
+    display: inline;
+    background-color: #99d1de;
+    border-radius: 5px;
+    padding-top: 32px;
+    padding-bottom: 32px;
+}
+
+.form {
+    display: table-row;
+}
+
+.form-spacer {
+    display: table-cell;
+    width: 50px;
+}
+
+.form-column {
+    display: table-cell;
+    background-color: #99d1de;
+    border-radius: 5px;
+    padding: 3px;
+}
+
+.item {
+    background-color: #cbecf4;
+    border-radius: 3px;
+    padding: 10px;
+    margin: 10px;
+}
+
+.item-title {
+    font-size: 1.25em;
+    padding-bottom: 0.5em;
+}
+
+.setting {
+    display: block;
+    padding-bottom: 10px;
+    vertical-align: center;
+}
+
+label {
+    padding-left: 1em;
+}
+
+.saving {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.saving-error {
+    font-style: italic;
+    text-align: center;
+}
+
+.add-remove-button {
+    background: none;
+    border: none;
+    width: 24px;
+    height: 24px;
+}

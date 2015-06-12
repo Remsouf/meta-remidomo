@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static "css/config.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "css/custom-icons.css" %}" />
+{% endblock %}
+
+{% block title %}Configuration{% endblock %}
+
+{% block content %}
+
+<div class="form" id="form">
+  <div class="form-column">
+    <div class="item">
+        <div class="item-title">RFX-lan</div>
+
+        <label for="rfxport">Port</label>
+        <input id="rfxport" name="rfxport" value="{{ rfxport }}"/>
+    </div>
+
+    <div class="item">
+        <div class="item-title">Capteurs</div>
+
+        <div>
+            <div id="sensors-list"><!-- populated with JS --></div>
+            <div class="add-button" id="add-button">&nbsp;</div>
+        </div>
+    </div>
+  </div>
+
+  <div class="form-spacer">&nbsp;</div>
+
+  <div class="form-column">
+    <div class="item">
+        <div class="item-title">R&eacute;gulation</div>
+        <div class="setting">
+            <label for="positif">Hyst&eacute;r&eacute;sis positif</label>
+            <input id="positif" value="{{ pos_hysteresis }}"/>
+            <span>&deg;C</span>
+        </div>
+        <div class="setting">
+            <label for="negatif">Hyst&eacute;r&eacute;sis n&eacute;gatif</label>
+            <input id="negatif" value="{{ neg_hysteresis }}"/>
+            <span>&deg;C</span>
+        </div>
+        <div class="setting">
+            <!-- needed for onchange event --><form>
+            <label for="ref-sensor">R&eacute;f&eacute;rence</label>
+            <select id="ref-sensor" autocomplete="off"><!-- populated with JS --></select>
+            </form>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="buttons" id="buttons">
+    <div class="button" id="save">&nbsp;</div>
+</div>
+
+<div id="save-success" title="Confirmation">
+    <div class="saving">Configuration sauvegard&eacute;e.</div>
+</div>
+<div id="save-failure" title="Erreur !">
+    <div class="saving">Modifications non appliqu&eacute;es :</div>
+    <div id="save-failure-msg" class="saving-error"></div>
+</div>
+{% endblock %}
+
+{% block script %}
+    $('#save').button({
+        icons: {
+            primary: "custom-icon-check"
+        },
+        text: false
+        }).click(function() {
+            $('#save').button("disable");
+            $.ajax({ url: '/chauffage/config/post',
+                     type: 'POST',
+                     data: { csrfmiddlewaretoken: '{{ csrf_token }}',
+                             sensors: JSON.stringify(sensors),
+                             rfxport: $('#rfxport').val(),
+                             neg_hysteresis: $('#negatif').val(),
+                             pos_hysteresis: $('#positif').val(),
+                   },
+            success: function(response) {
+                if (response.status == 'updated') {
+                    $('#save-success').dialog("open");
+                } else {
+                    $('#save-failure-msg').html(response.status);
+                    $('#save-failure').dialog("open");
+                }
+                $('#save').button("enable");
+            },
+            error: function(xhr, textStatus, thrownError) {
+                $('#save-failure-msg').html(xhr.status + ": " + xhr.responseText);
+                $('#save-failure').dialog("open");
+                $('#save').button("enable");
+            }
+        });
+    });
+
+    $('#save-success').dialog({
+        modal: true,
+        autoOpen: false,
+        draggable: true,
+        resizable: false,
+        width: 'auto',
+        buttons: {
+            Ok: function() { $(this).dialog("close"); }
+        }
+    });
+    $('#save-failure').dialog({
+        modal: true,
+        autoOpen: false,
+        draggable: true,
+        resizable: false,
+        width: 'auto',
+        buttons: {
+            Ok: function() { $(this).dialog("close"); }
+        }
+    });
+
+    $('#rfxport').spinner();
+
+    var sensors = [
+        {% for name, addr in sensors.items %}
+        { name: "{{ name }}", addr: "{{ addr }}", is_ref: {% if name == ref_sensor %}true{% else %}false{% endif %} },
+        {% endfor %}
+    ];
+
+    $('#add-button').button({
+        icons: { primary: "custom-icon-add" },
+        text: false,
+    }).addClass("add-remove-button")
+      .click(function() {
+         add_sensor();
+    });
+
+    $('#positif').addClass("ui-corner-all");
+    $('#negatif').addClass("ui-corner-all");
+
+    $('#ref-sensor').change(function() {
+        var selected = $('#ref-sensor')[0].selectedIndex;
+        for (var i=0; i < sensors.length; i++) {
+            sensors[i].is_ref = (i == selected);
+        }
+    });
+
+    center_elements = function() {
+        $('#buttons').position({
+            my: "center top",
+            at: "center top+15",
+            of: "#content"
+        });
+        $('#form').position({
+            my: "center top",
+            at: "center bottom+15",
+            of: "#buttons"
+        });
+    }
+
+    delete_sensor = function(id) {
+        sensors.splice(id, 1);
+        populate_sensors();
+    }
+
+    add_sensor = function() {
+        sensors.push({ name: "", addr: "", is_ref: false });
+        populate_sensors();
+    }
+
+    create_delete_function = function(index) {
+        return function() {
+            delete_sensor(index);
+        }
+    }
+
+    create_name_input_function = function(index) {
+        return function() {
+            value = $('#sensor' + index + '-name').val();
+            sensors[index].name = value;
+            populate_drop_down();
+        }
+    }
+
+    create_addr_input_function = function(index) {
+        return function() {
+            value = $('#sensor' + index + '-addr').val();
+            sensors[index].addr = value;
+            populate_drop_down();
+        }
+    }
+
+    populate_sensors = function() {
+        var html = "";
+        for (var i=0; i < sensors.length; i++) {
+            // Generate HTML inputs
+            html += "<div class=\"setting\">\n";
+            html += "  <div class=\"delete-button\" id=\"sensor" + i + "-delete\">&nbsp;</div>\n";
+            html += "  <label for=\"sensor" + i + "-name\">Nom</label>\n";
+            html += "  <input id=\"sensor" + i + "-name\" value=\"" + sensors[i].name + "\"/>\n";
+
+            html += "  <label for=\"sensor" + i + "-addr\">Adresse</label>\n";
+            html += "  <input id=\"sensor" + i + "-addr\" value=\"" + sensors[i].addr + "\"/>\n";
+            html += "</div>\n\n";
+        }
+        $('#sensors-list').html(html);
+
+        // Do this only once html was inserted !
+        for (var i=0; i < sensors.length; i++) {
+            // Set classes and hook delete button
+            $('#sensor' + i + '-name').addClass("ui-corner-all");
+            $('#sensor' + i + '-addr').addClass("ui-corner-all");
+            $('#sensor' + i + '-name').bind('input', create_name_input_function(i));
+            $('#sensor' + i + '-addr').bind('input', create_addr_input_function(i));
+
+            $('#sensor' + i + '-delete').button({
+                icons: { primary: "custom-icon-delete" },
+                text: false
+            }).addClass("add-remove-button")
+              .click(create_delete_function(i));
+        }
+
+        populate_drop_down();
+        center_elements();
+    }
+
+    populate_drop_down = function() {
+        // Generate ref sensor drop-down list
+        $('#ref-sensor').empty();
+        for (var i=0; i < sensors.length; i++) {
+            element = $('<option>', { value : sensors[i].name })
+                        .text(sensors[i].name);
+            if (sensors[i].is_ref) {
+                element.attr("selected", "selected");
+            }
+            $('#ref-sensor').append(element);
+        }
+    }
+
+    populate_sensors();
+
+    // Center buttons bar and keep it centered
+    $(window).resize(function() {
+        center_elements();
+    });
+
+{% endblock %}

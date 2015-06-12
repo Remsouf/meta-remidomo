@@ -98,11 +98,32 @@ class Config:
     def get_sensor_names(self):
         return self.sensors.keys()
 
+    def get_sensors(self):
+        return self.sensors
+
     def get_heating_sensor_name(self):
         return self.heating_sensor_name
 
     def get_rfxlan_port(self):
         return self.rfxlan_port
+
+    def set_hysteresis_over(self, value):
+        self.hysteresis_over = value
+
+    def set_hysteresis_under(self, value):
+        self.hysteresis_under = value
+
+    def set_rfxlan_port(self, port):
+        self.rfxlan_port = port
+
+    def clear_sensors(self):
+        self.sensors.clear()
+
+    def add_sensor(self, name, address):
+        self.sensors[name] = address
+
+    def set_heating_sensor_name(self, name):
+        self.heating_sensor_name = name
 
     """
     Write a config (XML) file

@@ -9,4 +9,6 @@ urlpatterns = patterns('',
     url(r'^program/', views.program, name='programmation'),
     url(r'^graph/data/([a-z]+)', views.data, name='data'),
     url(r'^graph/([a-z]+)', views.graph, name='graphe'),
+    url(r'^config/post', views.config_post, name='configuration-edit'),
+    url(r'^config/', views.config, name='configuration'),
 )
