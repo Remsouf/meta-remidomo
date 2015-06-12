@@ -69,6 +69,7 @@ def program(request):
                           'schedule' : schedule})
 
     context = { 'days': week_data,
+                'heating_enabled': config.is_heating_enabled(),
                 'iterator': itertools.count()}
     return render(request, 'program.html', context)
 
@@ -97,6 +98,12 @@ def program_post(request):
 
             order = Order(start_time, end_time, value)
             config.add_order(day_index, order)
+
+        heating_enabled = request.POST.get('heating_enabled', False)
+        if heating_enabled == 'true':
+            config.set_heating_enabled(True)
+        else:
+            config.set_heating_enabled(False)
 
         # Once done, save config file and restart service
         config.save(CONFIG_FILE)

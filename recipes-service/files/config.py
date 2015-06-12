@@ -25,6 +25,9 @@ ATTRIB_PORT = 'port'
 
 TAG_HEATING = 'chauffage'
 ATTRIB_SENSOR = 'capteur'
+ATTRIB_SWITCH = 'mode'
+VALUE_ON = 'on'
+VALUE_OFF = 'off'
 
 TAG_DAY = 'quotidien'
 ATTRIB_DAY_NAME = 'jour'
@@ -56,6 +59,7 @@ class Config:
         self.hysteresis_under = DEFAULT_HYSTERESIS
         self.temperature_sensor_id = None
         self.rfxlan_port = DEFAULT_RFXLAN_PORT
+        self.heating_enabled = False
         self.clear_schedules()
         self.sensors = {}
 
@@ -88,6 +92,9 @@ class Config:
 
     def is_sensor_known(self, id):
         return self.get_sensor_name(id) is not None
+
+    def is_heating_enabled(self):
+        return self.heating_enabled
 
     def get_sensor_id(self, name):
         if name in self.sensors:
@@ -124,6 +131,9 @@ class Config:
 
     def set_heating_sensor_name(self, name):
         self.heating_sensor_name = name
+
+    def set_heating_enabled(self, flag):
+        self.heating_enabled = flag
 
     """
     Write a config (XML) file
@@ -188,6 +198,16 @@ class Config:
         else:
             raise ET.ParseError('Missing "%s" attribute for tag "%s"' % (ATTRIB_SENSOR, TAG_HEATING))
 
+        if ATTRIB_SWITCH in node.attrib:
+            if node.attrib[ATTRIB_SWITCH] == VALUE_ON:
+                self.heating_enabled = True
+            elif node.attrib[ATTRIB_SWITCH] == VALUE_OFF:
+                self.heating_enabled = False
+            else:
+                raise ET.ParseError('Wrong value "%s" for attribute "%s"' % (node.attrib[ATTRIB_SWITCH], ATTRIB_SWITCH))
+        else:
+            raise ET.ParseError('Missing "%s" attribute for tag "%s"' % (ATTRIB_SWITCH, TAG_HEATING))
+
         for child in node:
             if child.tag == TAG_HYSTERESIS:
                 if ATTRIB_OVER in child.attrib:
@@ -246,6 +266,7 @@ class Config:
 
         chauffage = ET.SubElement(root, TAG_HEATING)
         chauffage.set(ATTRIB_SENSOR, self.get_heating_sensor_name())
+        chauffage.set(ATTRIB_SWITCH, VALUE_ON if self.is_heating_enabled() else VALUE_OFF)
 
         hysteresis = ET.SubElement(chauffage, TAG_HYSTERESIS)
         hysteresis.set(ATTRIB_OVER, str(self.get_hysteresis_over()))
@@ -277,30 +298,48 @@ class TestConfig(unittest.TestCase):
     def testCannotParseIncompleteHeatingTag(self):
         with self.assertRaises(ET.ParseError):
             Config(self.logger).parse_string('<remidomo><chauffage></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage capteur=""></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage mode="on"></chauffage></remidomo>')
+
+    def testCannotParseBadHeatingMode(self):
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode=""></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="blah"></chauffage></remidomo>')
 
     def testCannotParseBadHysteresis(self):
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><hysteresis positif="a"></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><hysteresis positif="a"></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><hysteresis negatif="5b"></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><hysteresis negatif="5b"></chauffage></remidomo>')
 
     def testCannotParseUnknownTag(self):
         with self.assertRaises(ET.ParseError):
             Config(self.logger).parse_string('<remidomo><blah/></remidomo>')
 
+    def testCanParseHeating(self):
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="on"></chauffage></remidomo>')
+        self.assertEqual("essai", config.get_heating_sensor_name())
+        self.assertEqual(True, config.is_heating_enabled())
+
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="off"></chauffage></remidomo>')
+        self.assertEqual(False, config.is_heating_enabled())
+
     def testCanParseHysteresis(self):
         # Partially specified
-        config = Config(self.logger).parse_string('<remidomo><chauffage capteur=""><hysteresis positif="12.34"/></chauffage></remidomo>')
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><hysteresis positif="12.34"/></chauffage></remidomo>')
         self.assertAlmostEqual(12.34, config.get_hysteresis_over(), self.DECIMAL_COMPARE_PLACES)
         self.assertAlmostEqual(DEFAULT_HYSTERESIS, config.get_hysteresis_under(), self.DECIMAL_COMPARE_PLACES)
 
         # Also checks unspecified value gets assigned back to default !
-        config.parse_string('<remidomo><chauffage capteur=""><hysteresis negatif="34.21"/></chauffage></remidomo>')
+        config.parse_string('<remidomo><chauffage capteur="" mode="on"><hysteresis negatif="34.21"/></chauffage></remidomo>')
         self.assertAlmostEqual(34.21, config.get_hysteresis_under(), self.DECIMAL_COMPARE_PLACES)
         self.assertAlmostEqual(DEFAULT_HYSTERESIS, config.get_hysteresis_over(), self.DECIMAL_COMPARE_PLACES)
 
         # Fully specified
-        config.parse_string('<remidomo><chauffage capteur=""><hysteresis positif="12.34" negatif="34.21"/></chauffage></remidomo>')
+        config.parse_string('<remidomo><chauffage capteur="" mode="on"><hysteresis positif="12.34" negatif="34.21"/></chauffage></remidomo>')
         self.assertAlmostEqual(12.34, config.get_hysteresis_over(), self.DECIMAL_COMPARE_PLACES)
         self.assertAlmostEqual(34.21, config.get_hysteresis_under(), self.DECIMAL_COMPARE_PLACES)
 
@@ -309,7 +348,7 @@ class TestConfig(unittest.TestCase):
             Config(self.logger).parse_string('<remidomo><rfxlan port="1234"><temperature/></rfxlan></remidomo>')
 
     def testCanParseSensors(self):
-        config = Config(self.logger).parse_string('<remidomo><rfxlan port="1234"><temperature id="deadbeef" nom="bidule"/></rfxlan><chauffage capteur="bidule"/></remidomo>')
+        config = Config(self.logger).parse_string('<remidomo><rfxlan port="1234"><temperature id="deadbeef" nom="bidule"/></rfxlan><chauffage capteur="bidule" mode="on"/></remidomo>')
         self.assertEqual('deadbeef', config.get_sensor_id('bidule'))
         self.assertEqual('bidule', config.get_sensor_name('deadbeef'))
         self.assertEqual('bidule', config.get_heating_sensor_name())
@@ -323,64 +362,64 @@ class TestConfig(unittest.TestCase):
 
     def testCannotParseBadDay(self):
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="blah"/></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="blah"/></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"/><pouet/></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"/><pouet/></chauffage></remidomo>')
 
     def testCanParseDays(self):
-        config = Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/></quotidien></chauffage></remidomo>')
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/></quotidien></chauffage></remidomo>')
         self.assertEquals(1, config.get_schedule(6).get_orders_nb())
         self.assertEquals(0, config.get_schedule(0).get_orders_nb())
 
     def testCannotParseBadOrders(self):
         # Missing attributes
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="08:00" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="08:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="08:00" fin="16:00"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="08:00" fin="16:00"/></quotidien></chauffage></remidomo>')
 
         # Bad times
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="blah" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="blah" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="08:00" fin="blah" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="08:00" fin="blah" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="1.2" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="1.2" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="08:00" fin="3.4" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="08:00" fin="3.4" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="1234" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="1234" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="08:00" fin="4321" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="08:00" fin="4321" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="96:12" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="96:12" fin="16:00" temperature="123"/></quotidien></chauffage></remidomo>')
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="08:00" fin="11:64" temperature="123"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="08:00" fin="11:64" temperature="123"/></quotidien></chauffage></remidomo>')
 
         # Bad values
         with self.assertRaises(ET.ParseError):
-            Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="lundi"><consigne debut="08:00" fin="16:00" temperature="abc"/></quotidien></chauffage></remidomo>')
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="lundi"><consigne debut="08:00" fin="16:00" temperature="abc"/></quotidien></chauffage></remidomo>')
 
     def testCanParseOrders(self):
-        config = Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/><consigne debut="17:00" fin="18:00" temperature="21"/></quotidien></chauffage></remidomo>')
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/><consigne debut="17:00" fin="18:00" temperature="21"/></quotidien></chauffage></remidomo>')
         self.assertAlmostEqual(12, config.get_schedule(6).get_order_for(datetime.time(9, 0)).get_value(), self.DECIMAL_COMPARE_PLACES)
         self.assertIsNone(config.get_schedule(6).get_order_for(datetime.time(7, 59)))
         self.assertAlmostEqual(21, config.get_schedule(6).get_order_for(datetime.time(17, 0)).get_value(), self.DECIMAL_COMPARE_PLACES)
         self.assertIsNone(config.get_schedule(6).get_order_for(datetime.time(19, 0)))
 
     def testCanSaveFile(self):
-        config = Config(self.logger).parse_string('<remidomo><chauffage capteur=""><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/><consigne debut="17:00" fin="18:15" temperature="21"/></quotidien></chauffage></remidomo>')
-        self.assertEqual('<?xml version="1.0" ?>\n<remidomo>\n  <rfxlan port="3865"/>\n  <chauffage capteur="">\n    <hysteresis negatif="1.0" positif="1.0"/>\n    ' +
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="on"><quotidien jour="dimanche"><consigne debut="08:00" fin="16:00" temperature="12"/><consigne debut="17:00" fin="18:15" temperature="21"/></quotidien></chauffage></remidomo>')
+        self.assertEqual('<?xml version="1.0" ?>\n<remidomo>\n  <rfxlan port="3865"/>\n  <chauffage capteur="" mode="on">\n    <hysteresis negatif="1.0" positif="1.0"/>\n    ' +
                          '<quotidien jour="lundi"/>\n    <quotidien jour="mardi"/>\n    <quotidien jour="mercredi"/>\n    <quotidien jour="jeudi"/>\n    <quotidien jour="vendredi"/>\n    ' +
                          '<quotidien jour="samedi"/>\n    <quotidien jour="dimanche">\n      <consigne debut="08:00" fin="16:00" temperature="12.0"/>\n      <consigne debut="17:00" fin="18:15" temperature="21.0"/>\n    ' +
                          '</quotidien>\n  </chauffage>\n</remidomo>\n', config.to_xml())
 
-        config = Config(self.logger).parse_string('<remidomo><chauffage capteur=""><hysteresis positif="12.34" negatif="34.21"/></chauffage></remidomo>')
-        self.assertEqual('<?xml version="1.0" ?>\n<remidomo>\n  <rfxlan port="3865"/>\n  <chauffage capteur="">\n    <hysteresis negatif="34.21" positif="12.34"/>\n    ' +
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur="" mode="off"><hysteresis positif="12.34" negatif="34.21"/></chauffage></remidomo>')
+        self.assertEqual('<?xml version="1.0" ?>\n<remidomo>\n  <rfxlan port="3865"/>\n  <chauffage capteur="" mode="off">\n    <hysteresis negatif="34.21" positif="12.34"/>\n    ' +
                          '<quotidien jour="lundi"/>\n    <quotidien jour="mardi"/>\n    <quotidien jour="mercredi"/>\n    <quotidien jour="jeudi"/>\n    ' +
                          '<quotidien jour="vendredi"/>\n    <quotidien jour="samedi"/>\n    <quotidien jour="dimanche"/>\n  </chauffage>\n</remidomo>\n', config.to_xml())
 

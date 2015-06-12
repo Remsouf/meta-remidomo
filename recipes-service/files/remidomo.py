@@ -20,6 +20,9 @@ VERSION = '##REMIDOMO_VERSION##'
 MEASUREMENT_AGE = 60 * 30  # 30min
 
 def check_orders(logger, config, executor, database):
+    if not config.is_heating_enabled():
+        return
+
     # Get the schedule for today
     today = datetime.date.today().weekday()
     schedule = config.get_schedule(today)

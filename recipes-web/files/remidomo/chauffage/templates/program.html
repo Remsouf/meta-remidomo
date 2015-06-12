@@ -53,6 +53,12 @@
             icons: { primary: this.checked ? 'custom-icon-on' : 'custom-icon-off' }
         });
     });
+    {% if heating_enabled %}
+    $('#power').prop("checked", true);
+    {% else %}
+    $('#power').prop("checked", false);
+    {% endif %}
+    $('#power').trigger("change");
     $('#refresh').button({
         icons: {
             primary: "custom-icon-refresh"
@@ -72,6 +78,7 @@
                  type: 'POST',
                  data: { csrfmiddlewaretoken: '{{ csrf_token }}',
                          items: JSON.stringify(items.get()),
+                         heating_enabled: $('#power').prop("checked"),
                        },
                  success: function(response) {
                     if (response.status == 'updated') {

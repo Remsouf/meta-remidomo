@@ -4,7 +4,7 @@
     <temperature id="th2 0x8305" nom="terrasse"/>
     <temperature id="th1 0xb402" nom="salon"/>
   </rfxlan>
-  <chauffage capteur="salon">
+  <chauffage capteur="salon" mode="off">
     <quotidien jour="lundi">
       <consigne debut="00:00" fin="23:59" temperature="18"/>
     </quotidien>
