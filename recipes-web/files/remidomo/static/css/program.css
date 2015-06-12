@@ -1,16 +1,19 @@
 .content {
-    margin-top: 1em;
+    margin-top: 10px;
+    padding-left: 10px;
     width: 95%;
 }
 
 .buttons {
     display: inline;
-    // Remove left margin (default for all buttons)
-    margin-left: -16px;
+    background-color: #99d1de;
+    border-radius: 5px;
+    padding-top: 32px;
+    padding-bottom: 32px;
 }
 
 .schedule {
-    margin-top: 1em;
+    margin-top: 2em;
     text-align: center;
 }
 
@@ -52,6 +55,16 @@
     height: 1em;
     text-align: center;
     font-style: italic;
+}
+
+.vis-item {
+    background-color: #cbecf4;
+    border-color: #7fc0cf;
+}
+
+.vis-item.vis-selected {
+    background-color: #7fc0cf;
+    border-color: #cbecf4;
 }
 
 /* Override active state for power button (to be the same as default) */

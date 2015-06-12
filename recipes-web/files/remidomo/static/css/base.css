@@ -13,7 +13,8 @@ html, body {
 }
 
 .logo, .brand, a.navitem {
-    background: linear-gradient(azure, lavender);
+    background-color: #99d1de;
+    color: #0a5f73;
 }
 
 .logo, .brand {
@@ -22,6 +23,11 @@ html, body {
 
 a.navitem {
     border-radius: 5px;
+    background-color: #cbecf4;
+}
+
+a:link {
+    text-decoration: none;
 }
 
 .logo {

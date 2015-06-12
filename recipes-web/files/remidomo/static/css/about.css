@@ -1,12 +1,15 @@
 .frame {
     display: table;
-    border: 2px solid black;
+    background-color: #99d1de;
+    border-radius: 5px;
     padding: 1em;
     width: 15em;
     height: 3em;
+    color: #0a5f73;
 }
 
 .version {
     display: table-cell;
     font-weight: bold;
+    color: #0a5f73;
 }

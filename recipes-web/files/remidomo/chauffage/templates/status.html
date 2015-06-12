@@ -53,21 +53,24 @@
     }).click(function() {
         window.location.reload();
     });
-    $('#buttons').position({
-        my: "center",
-        at: "bottom",
-        of: "#content"
-    });
-    $('#temp_status').position({
-        my: "center",
-        at: "center",
-        of: "#content"
-    });
     {% for sensor in data %}
         $('#frame-{{ sensor.name }}').click(function() {
             window.location.href="/chauffage/graph/{{ sensor.name|lower }}";
         });
     {% endfor %}
+
+    center_elements = function() {
+        $('#buttons').position({
+            my: "center top",
+            at: "center bottom",
+            of: "#content"
+        });
+        $('#temp_status').position({
+            my: "center",
+            at: "center",
+            of: "#content"
+        });
+    }
 
     google.load("visualization", "1.0", {packages:["gauge"]});
     google.setOnLoadCallback(drawChart);
@@ -106,5 +109,10 @@
             {% endfor %}
         }, 200);
     }
+
+    center_elements();
+    $(window).resize(function() {
+        center_elements();
+    });
 {% endblock %}
 

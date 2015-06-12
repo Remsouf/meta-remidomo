@@ -10,3 +10,13 @@ pre.log {
     max-height: 150px;
 }
 
+.ui-accordion-header {
+    background-color: #cbecf4;
+    background-image: none;
+    color: #0a5f73;
+}
+
+.ui-accordion-header-active {
+    background-color: #7fc0cf;
+    border-color: #cbecf4;
+}

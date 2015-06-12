@@ -82,6 +82,10 @@ function drawChart() {
         $('.frame').css("height", total * 0.9);
         chart.draw(data, options);
     });
+
+    $(window).resize(function() {
+        chart.draw(data, options);
+    });
 }
 {% endblock %}
 
