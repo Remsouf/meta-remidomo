@@ -71,7 +71,17 @@ function drawChart() {
     };
 
     var chart = new google.visualization.LineChart(document.getElementById('graph'));
-    chart.draw(data, options);
+
+    // Postpone drawing to take all room
+    $(document).ready(function() {
+        var total = $('.container').height();
+        total = total - $('.header').height();
+        total = total - $('.footer').height();
+        total = total - $('.push').height();
+        total = total - $('.title').height();
+        $('.frame').css("height", total * 0.9);
+        chart.draw(data, options);
+    });
 }
 {% endblock %}
 

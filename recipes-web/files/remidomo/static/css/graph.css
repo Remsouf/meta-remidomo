@@ -8,10 +8,11 @@
 .graph {
     height: 100%;
     text-align: center;
+    margin: 0;
 }
 
 .frame {
-    height: 30em;
+    height: 10em;
 }
 
 .content {
