@@ -95,6 +95,9 @@ class Config:
         else:
             return None
 
+    def get_sensor_names(self):
+        return self.sensors.keys()
+
     def get_heating_sensor_name(self):
         return self.heating_sensor_name
 

@@ -16,9 +16,6 @@ sys.path.append('/usr/lib/remidomo/service')
 from config import Config
 from orders import Order
 
-# TODO: Read those from config... (but when ?)
-SENSORS = ('terrasse', 'salon')
-
 CONFIG_FILE = '/etc/remidomo.xml'
 SERVICE_PID_FILE = '/var/run/remidomo.pid'
 
@@ -37,8 +34,14 @@ def __elapsed_time(timestamp):
         return 'Il y a %dj' % delta.days
 
 def status(request):
+    config = __get_config()
+    if config is not None:
+        names = config.get_sensor_names()
+    else:
+        names = list()
+
     sensor_data = []
-    for sensor_name in SENSORS:
+    for sensor_name in names:
         rows = Mesure.objects.filter(name=sensor_name).order_by('-timestamp')
         if rows is None or len(rows) == 0:
             current_temp = '?'
@@ -54,28 +57,26 @@ def status(request):
     return render(request, 'status.html', context)
 
 def program(request):
-    config = Config(logging.getLogger('django'))
-
     week_data = []
 
-    try:
-        config.read_file(CONFIG_FILE)
-
-        for index, day in enumerate(config.get_day_names()):
-            week_data.append({'name': day,
-                              'schedule' : config.get_schedule(index)})
-    except IOError:
-        for day in config.get_day_names():
-            week_data.append({'name': day,
-                              'schedule' : None})
+    config = __get_config()
+    for index, day in enumerate(config.get_day_names()):
+        if config is None:
+            schedule = None
+        else:
+            schedule = config.get_schedule(index)
+        week_data.append({'name': day,
+                          'schedule' : schedule})
 
     context = { 'days': week_data,
                 'iterator': itertools.count()}
     return render(request, 'program.html', context)
 
 def program_post(request):
-    config = Config(logging.getLogger('django'))
-    config.read_file(CONFIG_FILE)
+    config = __get_config()
+    if config is None:
+        # Not having a config file is acceptable here
+        config = Config(logging.getLogger('django'))
 
     if request.is_ajax():
         json_items = request.POST.get('items', None)
@@ -120,7 +121,11 @@ def graph(request, dataset_name):
     local_offset_hours = local_offset.total_seconds() / 3600
 
     if dataset_name == 'all':
-        names = SENSORS
+        config = __get_config()
+        if config is not None:
+            names = config.get_sensor_names()
+        else:
+            names = list()
     else:
         names = list()
         names.append(dataset_name)
@@ -148,24 +153,41 @@ def __get_service_pid():
         logging.getLogger('django').error('Failed to get service PID : %s', e.strerror)
         return None
 
+def __get_config():
+    config = Config(logging.getLogger('django'))
+    try:
+        config.read_file(CONFIG_FILE)
+        return config
+    except IOError:
+        return None
+
 """
 Return graph data in JSON format
 """
 def data(request, name):
+    config = __get_config()
+    if config is not None:
+        names = config.get_sensor_names()
+    else:
+        names = list()
 
     js_cols = [{'label':'dates', 'type':'datetime'}]
 
     if name == 'all':
         rows = Mesure.objects.order_by('timestamp')
-        for sensor_name in SENSORS:
+        for sensor_name in names:
             js_cols.append({'label': sensor_name.capitalize(), 'type': 'number'})
 
         # We need to generate a timeline which 'merges' data for all sensors
         js_rows = []
-        current_values = [None] * len(SENSORS)
+        current_values = [None] * len(names)
         for row in rows:
             # Remember value for this sensor
-            index = SENSORS.index(row.name)
+            # If sensor is mentioned in DB but not in config, skip
+            if row.name not in names:
+                continue
+
+            index = names.index(row.name)
             current_values[index] = row.value
 
             # Values known for all sensors ? Then go ahead
