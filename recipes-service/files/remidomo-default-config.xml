@@ -3,6 +3,7 @@
   <rfxlan port="3865">
     <temperature id="th2 0x8305" nom="terrasse"/>
     <temperature id="th1 0xb402" nom="salon"/>
+    <puissance id="elec2_0xf082" nom="compteur"/>
   </rfxlan>
   <chauffage capteur="salon" mode="off">
     <quotidien jour="lundi">
