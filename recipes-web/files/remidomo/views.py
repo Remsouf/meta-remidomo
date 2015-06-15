@@ -212,11 +212,16 @@ def config(request):
         # Not having a config file is acceptable here
         config = Config(logging.getLogger('django'))
 
+    # Assume we have only one power sensor here
+    elec = { 'name': config.get_power_sensors().keys()[0],
+             'addr': config.get_power_sensors().values()[0] }
+
     context = { 'rfxport': config.get_rfxlan_port(),
-                'sensors': config.get_sensors(),
+                'sensors': config.get_temp_sensors(),
                 'pos_hysteresis': config.get_hysteresis_over(),
                 'neg_hysteresis': config.get_hysteresis_under(),
                 'ref_sensor': config.get_heating_sensor_name(),
+                'elec': elec,
                 }
     return render(request, 'config.html', context)
 
@@ -228,18 +233,27 @@ def config_post(request):
 
     if request.is_ajax():
         json_sensors = request.POST.get('sensors', None)
-        config.clear_sensors()
+        config.clear_temp_sensors()
         if json_sensors is not None:
             try:
                 sensors = json.loads(json_sensors)
                 for sensor in sensors:
-                    config.add_sensor(sensor['name'], sensor['addr'])
+                    config.add_temp_sensor(sensor['name'], sensor['addr'])
 
                     if sensor['is_ref']:
                         config.set_heating_sensor_name(sensor['name'])
 
             except ValueError:
-                return HttpResponse(json.dumps(dict(status='Donnees capteurs invalides: %s' % sensors)), content_type='application/json')
+                return HttpResponse(json.dumps(dict(status='Donnees capteurs temperature invalides: %s' % sensors)), content_type='application/json')
+
+        json_power = request.POST.get('elec', None)
+        config.clear_power_sensors()
+        if json_power is not None:
+            try:
+                power = json.loads(json_power)
+                config.add_power_sensor(power['name'], power['addr'])
+            except ValueError:
+                return HttpResponse(json.dumps(dict(status='Donnees capteurs energie invalides: %s' % power)), content_type='application/json')
 
         port = request.POST.get('rfxport', None)
         if port is not None:

@@ -51,6 +51,14 @@
             </form>
         </div>
     </div>
+    <div class="item">
+        <div class="item-title">Energie</div>
+        <label for="elec-name">Nom</label>
+        <input id="elec-name" value=""/>
+
+        <label for="elec-addr">Adresse</label>
+        <input id="elec-addr" value=""/>
+    </div>
   </div>
 </div>
 
@@ -79,6 +87,7 @@
                      type: 'POST',
                      data: { csrfmiddlewaretoken: '{{ csrf_token }}',
                              sensors: JSON.stringify(sensors),
+                             elec: JSON.stringify(elec),
                              rfxport: $('#rfxport').val(),
                              neg_hysteresis: $('#negatif').val(),
                              pos_hysteresis: $('#positif').val(),
@@ -128,6 +137,10 @@
         { name: "{{ name }}", addr: "{{ addr }}", is_ref: {% if name == ref_sensor %}true{% else %}false{% endif %} },
         {% endfor %}
     ];
+
+    var elec = { name: "{{ elec.name }}",
+                 addr: "{{ elec.addr }}"
+               };
 
     $('#add-button').button({
         icons: { primary: "custom-icon-add" },
@@ -241,9 +254,23 @@
 
     populate_sensors();
 
+    // Set classes for power sensor
+    $('#elec-name').addClass("ui-corner-all");
+    $('#elec-name').val(elec.name);
+    $('#elec-name').bind('input', function() {
+        value = $('#elec-name').val();
+        elec.name = value;
+    });
+
+    $('#elec-addr').addClass("ui-corner-all");
+    $('#elec-addr').val(elec.addr);
+    $('#elec-addr').bind('input', function() {
+        value = $('#elec-addr').val();
+        elec.addr = value;
+    });
+
     // Center buttons bar and keep it centered
     $(window).resize(function() {
         center_elements();
     });
-
 {% endblock %}

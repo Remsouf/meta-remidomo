@@ -70,14 +70,22 @@ class RFXListener(Thread):
             if self.config.is_sensor_known(device):
                 value = message.get_named_value_float('current')
                 units = message.get_named_value_string('units')
-                name = self.config.get_sensor_name(device)
+                name = self.config.get_temp_sensor_name(device)
 
                 # Insert data into database
                 self.database.insert(device, name, value, units)
         elif msg_type == 'humidity':
             pass
         elif msg_type == 'power':
-            pass
+            # Check the device is an interesting one
+            device = message.get_named_value_string('device')
+            if self.config.is_sensor_known(device):
+                value = message.get_named_value_float('current')
+                units = message.get_named_value_string('units')
+                name = self.config.get_power_sensor_name(device)
+
+                # Insert data into database
+                self.database.insert(device, name, value, units)
         elif msg_type == 'energy':
             pass
         elif msg_type == 'battery':

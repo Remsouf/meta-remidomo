@@ -19,6 +19,7 @@ TAG_ROOT = 'remidomo'
 
 TAG_SENSORS = 'rfxlan'
 TAG_TEMPERATURE = 'temperature'
+TAG_POWER = 'puissance'
 ATTRIB_ID = 'id'
 ATTRIB_NAME = 'nom'
 ATTRIB_PORT = 'port'
@@ -61,7 +62,8 @@ class Config:
         self.rfxlan_port = DEFAULT_RFXLAN_PORT
         self.heating_enabled = False
         self.clear_schedules()
-        self.sensors = {}
+        self.temp_sensors = {}
+        self.power_sensors = {}
 
     def get_day_names(self):
         return self.day_names
@@ -83,33 +85,45 @@ class Config:
     def get_hysteresis_under(self):
         return self.hysteresis_under
 
-    def get_sensor_name(self, id):
-        for (name, candidate) in self.sensors.items():
+    def get_temp_sensor_name(self, id):
+        for (name, candidate) in self.temp_sensors.items():
+            if candidate == id:
+                return name
+        else:
+            return None
+
+    def get_power_sensor_name(self, id):
+        for (name, candidate) in self.power_sensors.items():
             if candidate == id:
                 return name
         else:
             return None
 
     def is_sensor_known(self, id):
-        return self.get_sensor_name(id) is not None
+        is_temperature = self.get_temp_sensor_name(id) is not None
+        is_power = self.get_power_sensor_name(id) is not None
+        return is_temperature or is_power
 
     def is_heating_enabled(self):
         return self.heating_enabled
 
-    def get_sensor_id(self, name):
-        if name in self.sensors:
-            return self.sensors[name]
+    def get_temp_sensor_id(self, name):
+        if name in self.temp_sensors:
+            return self.temp_sensors[name]
         else:
             return None
 
-    def get_sensor_names(self):
-        return self.sensors.keys()
+    def get_temp_sensor_names(self):
+        return self.temp_sensors.keys()
 
-    def get_sensors(self):
-        return self.sensors
+    def get_temp_sensors(self):
+        return self.temp_sensors
 
     def get_heating_sensor_name(self):
         return self.heating_sensor_name
+
+    def get_power_sensors(self):
+        return self.power_sensors
 
     def get_rfxlan_port(self):
         return self.rfxlan_port
@@ -123,17 +137,23 @@ class Config:
     def set_rfxlan_port(self, port):
         self.rfxlan_port = port
 
-    def clear_sensors(self):
-        self.sensors.clear()
+    def clear_temp_sensors(self):
+        self.temp_sensors.clear()
 
-    def add_sensor(self, name, address):
-        self.sensors[name] = address
+    def clear_power_sensors(self):
+        self.power_sensors.clear()
+
+    def add_temp_sensor(self, name, address):
+        self.temp_sensors[name] = address
 
     def set_heating_sensor_name(self, name):
         self.heating_sensor_name = name
 
     def set_heating_enabled(self, flag):
         self.heating_enabled = flag
+
+    def add_power_sensor(self, name, address):
+        self.power_sensors[name] = address
 
     """
     Write a config (XML) file
@@ -190,7 +210,17 @@ class Config:
                     name = child.attrib[ATTRIB_NAME]
                 else:
                     raise ET.ParseError('Missing "%s" attribute for tag "%s"' % (ATTRIB_NAME, TAG_TEMPERATURE))
-                self.sensors[name] = id
+                self.temp_sensors[name] = id
+            elif child.tag == TAG_POWER:
+                if ATTRIB_ID in child.attrib:
+                    id = child.attrib[ATTRIB_ID]
+                else:
+                    raise ET.ParseError('Missing "%s" attribute for tag "%s"' % (ATTRIB_ID, TAG_POWER))
+                if ATTRIB_NAME in child.attrib:
+                    name = child.attrib[ATTRIB_NAME]
+                else:
+                    raise ET.ParseError('Missing "%s" attribute for tag "%s"' % (ATTRIB_NAME, TAG_POWER))
+                self.power_sensors[name] = id
 
     def __parse_heating(self, node):
         if ATTRIB_SENSOR in node.attrib:
@@ -259,10 +289,15 @@ class Config:
         rfxlan = ET.SubElement(root, TAG_SENSORS)
         rfxlan.set(ATTRIB_PORT, str(self.get_rfxlan_port()))
 
-        for name, id in self.sensors.items():
+        for name, id in self.temp_sensors.items():
             temp = ET.SubElement(rfxlan, TAG_TEMPERATURE)
             temp.set(ATTRIB_ID, id)
             temp.set(ATTRIB_NAME, name)
+
+        for name, id in self.power_sensors.items():
+            power = ET.SubElement(rfxlan, TAG_POWER)
+            power.set(ATTRIB_ID, id)
+            power.set(ATTRIB_NAME, name)
 
         chauffage = ET.SubElement(root, TAG_HEATING)
         chauffage.set(ATTRIB_SENSOR, self.get_heating_sensor_name())
@@ -349,8 +384,8 @@ class TestConfig(unittest.TestCase):
 
     def testCanParseSensors(self):
         config = Config(self.logger).parse_string('<remidomo><rfxlan port="1234"><temperature id="deadbeef" nom="bidule"/></rfxlan><chauffage capteur="bidule" mode="on"/></remidomo>')
-        self.assertEqual('deadbeef', config.get_sensor_id('bidule'))
-        self.assertEqual('bidule', config.get_sensor_name('deadbeef'))
+        self.assertEqual('deadbeef', config.get_temp_sensor_id('bidule'))
+        self.assertEqual('bidule', config.get_temp_sensor_name('deadbeef'))
         self.assertEqual('bidule', config.get_heating_sensor_name())
         self.assertEqual(1234, config.get_rfxlan_port())
 
