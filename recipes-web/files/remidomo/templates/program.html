@@ -74,7 +74,7 @@
         text: false
     }).click(function() {
         $('#save').button("disable");
-        $.ajax({ url: '/chauffage/program/post',
+        $.ajax({ url: '/program/post',
                  type: 'POST',
                  data: { csrfmiddlewaretoken: '{{ csrf_token }}',
                          items: JSON.stringify(items.get()),

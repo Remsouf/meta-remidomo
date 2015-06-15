@@ -35,7 +35,7 @@
         },
         text: false
     }).click(function() {
-        window.location.href="/chauffage/graph/all";
+        window.location.href="/graph/all";
     });
     $('#schedule').button({
         icons: {
@@ -43,7 +43,7 @@
         },
         text: false
     }).click(function() {
-        window.location.href="/chauffage/program";
+        window.location.href="/program";
     });
     $('#refresh').button({
         icons: {
@@ -55,7 +55,7 @@
     });
     {% for sensor in data %}
         $('#frame-{{ sensor.name }}').click(function() {
-            window.location.href="/chauffage/graph/{{ sensor.name|lower }}";
+            window.location.href="/graph/{{ sensor.name|lower }}";
         });
     {% endfor %}
 

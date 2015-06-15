@@ -36,7 +36,7 @@ function drawChart() {
 
     var temp_formatter = new google.visualization.NumberFormat({fractionDigits:1, suffix:' \u00B0C'});
     var date_formatter = new google.visualization.DateFormat({pattern: 'd MMM \u00E0 H:mm', timeZone: TZ});
-    var js_data = $.ajax({ url: "/chauffage/graph/data/{{ dataset_name }}",
+    var js_data = $.ajax({ url: "/graph/data/{{ dataset_name }}",
                            dataType:"json",
                            async: false
                          }).responseText;

@@ -27,8 +27,6 @@ FILES_${PN} += "${libdir}/remidomo/web/manage.py \
                 ${libdir}/remidomo/web/remidomo/static/admin \
                 ${libdir}/remidomo/web/remidomo/templates/*.html \
                 ${libdir}/remidomo/web/remidomo/*.py \
-                ${libdir}/remidomo/web/remidomo/chauffage/*.py \
-                ${libdir}/remidomo/web/remidomo/chauffage/templates/*.html \
                 ${sysconfdir}/nginx/nginx.conf \
                 ${sysconfdir}/init.d/fastcgi \
                "
@@ -83,12 +81,6 @@ do_install() {
     install -m 0644 ${WORKDIR}/remidomo/static/js/images/* ${D}/${libdir}/remidomo/web/remidomo/static/js/images
     install -d ${D}/${libdir}/remidomo/web/remidomo/templates
     install -m 0644 ${WORKDIR}/remidomo/templates/*.html ${D}/${libdir}/remidomo/web/remidomo/templates
-
-    # Install app(s)
-    install -d ${D}/${libdir}/remidomo/web/remidomo/chauffage
-    install -m 0644 ${WORKDIR}/remidomo/chauffage/*.py ${D}/${libdir}/remidomo/web/remidomo/chauffage
-    install -d ${D}/${libdir}/remidomo/web/remidomo/chauffage/templates
-    install -m 0644 ${WORKDIR}/remidomo/chauffage/templates/*.html ${D}/${libdir}/remidomo/web/remidomo/chauffage/templates
 
     # Install admin static files (just symlink)
     ln -s /usr/lib/python2.7/site-packages/django/contrib/admin/static/admin ${D}/${libdir}/remidomo/web/remidomo/static/admin

@@ -75,7 +75,7 @@
         text: false
         }).click(function() {
             $('#save').button("disable");
-            $.ajax({ url: '/chauffage/config/post',
+            $.ajax({ url: '/config/post',
                      type: 'POST',
                      data: { csrfmiddlewaretoken: '{{ csrf_token }}',
                              sensors: JSON.stringify(sensors),
