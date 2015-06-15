@@ -75,20 +75,20 @@ do_install() {
     install -d ${D}/${libdir}/remidomo/web/remidomo/static/images
     install -m 0644 ${WORKDIR}/remidomo/static/images/* ${D}/${libdir}/remidomo/web/remidomo/static/images
     install -d ${D}/${libdir}/remidomo/web/remidomo/static/css
-    install -m 0644 ${WORKDIR}/remidomo/static/css/* ${D}/${libdir}/remidomo/web/remidomo/static/css
+    install -m 0644 ${WORKDIR}/remidomo/static/css/*.css ${D}/${libdir}/remidomo/web/remidomo/static/css
     install -d ${D}/${libdir}/remidomo/web/remidomo/static/js
     install -m 0644 ${WORKDIR}/remidomo/static/js/*.css ${D}/${libdir}/remidomo/web/remidomo/static/js
     install -m 0644 ${WORKDIR}/remidomo/static/js/*.js ${D}/${libdir}/remidomo/web/remidomo/static/js
     install -d ${D}/${libdir}/remidomo/web/remidomo/static/js/images
     install -m 0644 ${WORKDIR}/remidomo/static/js/images/* ${D}/${libdir}/remidomo/web/remidomo/static/js/images
     install -d ${D}/${libdir}/remidomo/web/remidomo/templates
-    install -m 0644 ${WORKDIR}/remidomo/templates/* ${D}/${libdir}/remidomo/web/remidomo/templates
+    install -m 0644 ${WORKDIR}/remidomo/templates/*.html ${D}/${libdir}/remidomo/web/remidomo/templates
 
     # Install app(s)
     install -d ${D}/${libdir}/remidomo/web/remidomo/chauffage
     install -m 0644 ${WORKDIR}/remidomo/chauffage/*.py ${D}/${libdir}/remidomo/web/remidomo/chauffage
     install -d ${D}/${libdir}/remidomo/web/remidomo/chauffage/templates
-    install -m 0644 ${WORKDIR}/remidomo/chauffage/templates/* ${D}/${libdir}/remidomo/web/remidomo/chauffage/templates
+    install -m 0644 ${WORKDIR}/remidomo/chauffage/templates/*.html ${D}/${libdir}/remidomo/web/remidomo/chauffage/templates
 
     # Install admin static files (just symlink)
     ln -s /usr/lib/python2.7/site-packages/django/contrib/admin/static/admin ${D}/${libdir}/remidomo/web/remidomo/static/admin
