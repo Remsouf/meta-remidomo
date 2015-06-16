@@ -10,8 +10,8 @@
 {% block title %}Tableau de bord{% endblock %}
 
 {% block content %}
-<div class="temp_status" id="temp_status">
-    {% for sensor in data %}
+<div class="status" id="status">
+    {% for sensor in temperature %}
     <div class="frame-spacer">
         <div class="frame" id="frame-{{ sensor.name }}">
             <div class="gauge" id="gauge-{{ sensor.name }}"></div>
@@ -19,6 +19,12 @@
         </div>
     </div>
     {% endfor %}
+    <div class="frame-spacer">
+        <div class="frame" id="frame-{{ power.name }}">
+            <div class="gauge" id="gauge-{{ power.name }}"></div>
+            <div class="ilya">{{ power.since_when }}</div>
+        </div>
+    </div>
 </div>
 
 <div class="buttons" id="buttons">
@@ -53,11 +59,14 @@
     }).click(function() {
         window.location.reload();
     });
-    {% for sensor in data %}
+    {% for sensor in temperature %}
         $('#frame-{{ sensor.name }}').click(function() {
             window.location.href="/graph/{{ sensor.name|lower }}";
         });
     {% endfor %}
+    $('#frame-{{ power.name }}').click(function() {
+        window.location.href="/graph/{{ power.name|lower }}";
+    });
 
     center_elements = function() {
         $('#buttons').position({
@@ -65,7 +74,7 @@
             at: "center bottom",
             of: "#content"
         });
-        $('#temp_status').position({
+        $('#status').position({
             my: "center",
             at: "center",
             of: "#content"
@@ -77,8 +86,8 @@
 
     function drawChart() {
 
-        // Options are common to all gauges
-        var options = {
+        // Options common to all temperature gauges
+        var temp_options = {
             animation: { startup: true,
                          duration: 1000,
                          easing: 'out'},
@@ -89,24 +98,53 @@
             minorTicks: 5
         };
 
-        {% for sensor in data %}
+        // Options for power gauge
+        var power_options = {
+            animation: { startup: true,
+                         duration: 1000,
+                         easing: 'out'},
+            width: 200, height: 200,
+            min: 0, max: 4000,
+            greenFrom: 0, greenTo: 500, greenColor: '#aaaaff',
+            yellowFrom: 1500, yellowTo: 3000, yellowColor: '#ffe773',
+            redFrom: 3000, redTo: 4000, redColor: '#ff6445',
+            minorTicks: 5
+        };
+
+        // Temperature gauges
+        {% for sensor in temperature %}
             var data_{{ sensor.name }} = google.visualization.arrayToDataTable([
                 ['Label', 'Value'],
                 ['{{ sensor.name }}', -20],
             ]);
 
             var chart_{{ sensor.name }} = new google.visualization.Gauge(document.getElementById('gauge-{{ sensor.name }}'));
-            chart_{{ sensor.name }}.draw(data_{{ sensor.name }}, options);
+            chart_{{ sensor.name }}.draw(data_{{ sensor.name }}, temp_options);
         {% endfor %}
 
+        // Power gauge
+        var data_{{ power.name }} = google.visualization.arrayToDataTable([
+            ['Label', 'Value'],
+            ['{{ power.name }}', 0],
+        ]);
+
+        var chart_{{ power.name }} = new google.visualization.Gauge(document.getElementById('gauge-{{ power.name }}'));
+        chart_{{ power.name }}.draw(data_{{ power.name }}, power_options);
+
         setTimeout(function() {
-            {% for sensor in data %}
+            {% for sensor in temperature %}
                 var data_{{ sensor.name }} = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
                     ['{{ sensor.name }}', {{ sensor.temp }}],
                 ]);
-                chart_{{ sensor.name }}.draw(data_{{ sensor.name }}, options);
+                chart_{{ sensor.name }}.draw(data_{{ sensor.name }}, temp_options);
             {% endfor %}
+
+            var data_{{ power.name }} = google.visualization.arrayToDataTable([
+                ['Label', 'Value'],
+                ['{{ power.name }}', {{ power.power }}],
+            ]);
+            chart_{{ power.name }}.draw(data_{{ power.name }}, power_options);
         }, 200);
     }
 
