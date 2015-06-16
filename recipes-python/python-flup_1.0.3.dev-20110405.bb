@@ -13,8 +13,8 @@ SRC_URI = "https://pypi.python.org/packages/source/f/${SRCNAME}/${SRCNAME}-${PV}
 SRC_URI[tarball.md5sum] = "a005b072d144fc0e44b0fa4c5a9ba029"
 SRC_URI[tarball.sha256sum] = "6649cf41854ea8782c795cdde64fdf79a90db821533d3652f91d21b0a7f39c79"
 
-SRC_URI[patch.md5sum] = "da46dad94c2cafa335a72dd8b682c3f7"
-SRC_URI[patch.sha256sum] = "20a7da79f7fb158857d9c1dc66f2e81f5c88e8c50de4d82e434c7a05146c1b11"
+SRC_URI[patch.md5sum] = "a73ea464d913e2f084e208f73b40f787"
+SRC_URI[patch.sha256sum] = "259606598c9ca2368db24f0700444f89276aef567523eed5342bfe1d6098ee1a"
 
 S = "${WORKDIR}/${SRCNAME}-${PV}"
 
