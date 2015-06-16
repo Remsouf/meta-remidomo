@@ -34,7 +34,7 @@ function drawChart() {
 
     var TZ = 2 * {{ time_offset }};
 
-    var temp_formatter = new google.visualization.NumberFormat({fractionDigits:1, suffix:' \u00B0C'});
+    var temp_formatter = new google.visualization.NumberFormat({fractionDigits:1, suffix:' {{ units }}'});
     var date_formatter = new google.visualization.DateFormat({pattern: 'd MMM \u00E0 H:mm', timeZone: TZ});
     var js_data = $.ajax({ url: "/graph/data/{{ dataset_name }}",
                            dataType:"json",
@@ -61,7 +61,7 @@ function drawChart() {
                  maxTextLines: 5,
                  titleTextStyle: {color: '#555555' },
         },
-        vAxis: { title: '\u00B0C',
+        vAxis: { title: '{{ units }}',
                  gridlines: { color: '#888888' },
                  minorGridlines: { count: 2, color:'#bbbbbb' }
         },
