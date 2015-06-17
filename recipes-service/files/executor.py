@@ -19,6 +19,9 @@ class Executor:
         except pifacecommon.spi.SPIInitError:
             self.logger.warning('Failed to init SPI. Assuming running on dev machine.')
             self.running_on_rpi = False
+        except pifacedigitalio.core.NoPiFaceDigitalDetectedError:
+            self.logger.warning('PifaceDigital not present.')
+            self.running_on_rpi = False
 
     def heating_poweron(self):
         self.logger.debug('Set heating ON')
