@@ -67,5 +67,6 @@ do_install() {
     install -m 0644 ${WORKDIR}/executor.py ${D}/${libdir}/remidomo/service
     install -m 0644 ${WORKDIR}/rfx_listener.py ${D}/${libdir}/remidomo/service
     install -m 0644 ${WORKDIR}/xpl_msg.py ${D}/${libdir}/remidomo/service
+    install -m 0644 ${WORKDIR}/database.py ${D}/${libdir}/remidomo/service
 }
 
