@@ -25,6 +25,11 @@ This layer depends on:
   layers: meta-raspberrypi
   branch: master
   revision: HEAD
+
+  URI: git://github.com/sbabic/meta-swupdate.git
+  layer: meta-swupdate
+  branch: master
+  revision: HEAD
   
 
 

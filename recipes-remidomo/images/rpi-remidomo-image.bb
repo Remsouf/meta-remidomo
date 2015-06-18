@@ -1,11 +1,19 @@
 require recipes-core/images/rpi-basic-image.bb
 
-IMAGE_INSTALL += "remidomo-service remidomo-web nginx ntp wpa-supplicant tzdata cronie"
+IMAGE_INSTALL += "remidomo-service remidomo-web nginx ntp wpa-supplicant tzdata cronie swupdate swupdate-www"
 
 IMAGE_LINGUAS = "fr-fr en-us"
 
+IMAGE_OVERHEAD_FACTOR = "2.0"
+
 ROOTFS_PREPROCESS_COMMAND += "check_vars;"
 ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant; set_crontab;"
+
+# Also build an image for live updates
+IMAGE_FSTYPES += "swupdate-img"
+inherit swupdate-img
+SWDESCRIPTION = "${THISDIR}/sw-description"
+UPDATE_SCRIPTS = "${THISDIR}/migrate.sh"
 
 python check_vars() {
     for var in ('WIFI_SSID', 'WIFI_PASSWORD', 'ROOT_PASSWORD', 'ROUTER_ADDR'):

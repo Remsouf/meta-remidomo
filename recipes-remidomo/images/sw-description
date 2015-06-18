@@ -1,0 +1,27 @@
+software =
+{
+    version = "0.1";
+
+    /*images: (
+        {
+            filename = "#ROOTFS#";
+            device = "/dev/mmcblk0p2";
+            compressed = true;
+        }
+    );*/
+
+    files: (
+        {
+            filename = "#KERNEL#";
+            path = "kernel.img";
+            filesystem = "vfat";
+            device = "/dev/mmcblk0p1";
+        }
+    );
+
+    scripts: (
+        {
+            filename = "migrate.sh";
+        }
+    );
+}
