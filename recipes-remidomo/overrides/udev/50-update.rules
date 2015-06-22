@@ -1,0 +1,1 @@
+ACTION=="add", KERNEL=="sd[a-z][0-9]", RUN+="/usr/bin/update.sh"

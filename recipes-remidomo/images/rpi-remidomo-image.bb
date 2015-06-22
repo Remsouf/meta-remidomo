@@ -7,7 +7,7 @@ IMAGE_LINGUAS = "fr-fr en-us"
 IMAGE_OVERHEAD_FACTOR = "2.0"
 
 ROOTFS_PREPROCESS_COMMAND += "check_vars;"
-ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant; set_crontab;"
+ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant; set_crontab; install_update_script;"
 
 # Also build an image for live updates
 IMAGE_FSTYPES += "swupdate-img"
@@ -69,4 +69,9 @@ set_crontab() {
     sed -e "s,##ROUTER_ADDR##,${ROUTER_ADDR}," \
                 ${IMAGE_ROOTFS}/${sysconfdir}/crontab > ${IMAGE_ROOTFS}/${sysconfdir}/crontab.new
     mv ${IMAGE_ROOTFS}/${sysconfdir}/crontab.new ${IMAGE_ROOTFS}/${sysconfdir}/crontab
+}
+
+install_update_script() {
+    install -d ${IMAGE_ROOTFS}/${bindir}
+    install -m 0755 ${THISDIR}/update.sh ${IMAGE_ROOTFS}/${bindir}/update.sh
 }
