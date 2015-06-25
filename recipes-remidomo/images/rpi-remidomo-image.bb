@@ -1,13 +1,13 @@
 require recipes-core/images/rpi-basic-image.bb
 
-IMAGE_INSTALL += "remidomo-service remidomo-web nginx ntp wpa-supplicant tzdata cronie swupdate swupdate-www"
+IMAGE_INSTALL += "remidomo-service remidomo-web nginx ntp wpa-supplicant tzdata cronie swupdate swupdate-www u-boot-rpi"
 
 IMAGE_LINGUAS = "fr-fr en-us"
 
 IMAGE_OVERHEAD_FACTOR = "2.0"
 
 ROOTFS_PREPROCESS_COMMAND += "check_vars;"
-ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant; set_crontab; install_update_script;"
+ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant; set_crontab; install_update_script; install_uboot_env;"
 
 # Also build an image for live updates
 IMAGE_FSTYPES += "swupdate-img"
@@ -74,4 +74,9 @@ set_crontab() {
 install_update_script() {
     install -d ${IMAGE_ROOTFS}/${bindir}
     install -m 0755 ${THISDIR}/update.sh ${IMAGE_ROOTFS}/${bindir}/update.sh
+}
+
+install_uboot_env() {
+    install -d ${DEPLOY_DIR_IMAGE}/bcm2835-bootfiles
+    mkimage -A arm -O linux -T script -C none -n boot.scr -d ${THISDIR}/u-boot.scr ${DEPLOY_DIR_IMAGE}/bcm2835-bootfiles/boot.scr
 }
