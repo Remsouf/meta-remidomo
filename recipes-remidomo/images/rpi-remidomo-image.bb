@@ -4,16 +4,18 @@ IMAGE_INSTALL += "remidomo-service remidomo-web nginx ntp wpa-supplicant tzdata 
 
 IMAGE_LINGUAS = "fr-fr en-us"
 
-IMAGE_OVERHEAD_FACTOR = "2.0"
-
 ROOTFS_PREPROCESS_COMMAND += "check_vars;"
 ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant; set_crontab; install_update_script; install_uboot_env;"
 
 # Also build an image for live updates
-IMAGE_FSTYPES += "swupdate-img"
+IMAGE_FSTYPES = "swupdate-img sdimg-redund"
+
 inherit swupdate-img
 SWDESCRIPTION = "${THISDIR}/sw-description"
 UPDATE_SCRIPTS = "${THISDIR}/migrate.sh"
+
+inherit sdcard_image_redund
+
 
 python check_vars() {
     for var in ('WIFI_SSID', 'WIFI_PASSWORD', 'ROOT_PASSWORD', 'ROUTER_ADDR'):
