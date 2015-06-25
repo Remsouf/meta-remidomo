@@ -10,7 +10,7 @@ import math
 import datetime
 
 DB_PATH = '/var/remidomo/db.sqlite3'
-TABLE_NAME = 'chauffage_mesure'
+TABLE_NAME = 'remidomo_mesure'
 
 COMPRESS = True
 SAMPLING_PERIOD = 30*60  # 30 min

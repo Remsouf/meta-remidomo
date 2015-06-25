@@ -2,7 +2,7 @@ import json
 import os
 from subprocess import PIPE, Popen
 import datetime
-import dateutil
+from dateutil.parser import parse
 from dateutil.tz import tzlocal
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -181,8 +181,8 @@ def program_post(request):
         config.clear_schedules()
         for time_range in items:
             day_index = time_range['group'] - 1
-            start_time = dateutil.parser.parse(time_range['start']).time()
-            end_time = dateutil.parser.parse(time_range['end']).time()
+            start_time = parse(time_range['start']).time()
+            end_time = parse(time_range['end']).time()
             value = float(time_range['content'])
 
             order = Order(start_time, end_time, value)
