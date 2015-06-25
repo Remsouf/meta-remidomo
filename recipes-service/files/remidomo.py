@@ -125,9 +125,11 @@ def main():
             time.sleep(60)
         except KeyboardInterrupt:
             print >> sys.stderr, '\nExiting by user request.\n'
+            executor.heating_poweroff()
             rfx_listener.stop()
             sys.exit(0)
         except Exception:
+            executor.heating_poweroff()
             # If main thread crashes, we must also stop RFX thread !
             rfx_listener.stop()
             raise
