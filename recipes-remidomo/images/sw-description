@@ -2,26 +2,57 @@ software =
 {
     version = "0.1";
 
-    /*images: (
-        {
-            filename = "#ROOTFS#";
-            device = "/dev/mmcblk0p2";
-            compressed = true;
-        }
-    );*/
+    stable: {
 
-    files: (
-        {
-            filename = "#KERNEL#";
-            path = "kernel.img";
-            filesystem = "vfat";
-            device = "/dev/mmcblk0p1";
-        }
-    );
+        main: {
+            images: (
+                {
+                    filename = "#ROOTFS#";
+                    device = "/dev/mmcblk0p2";
+                    compressed = true;
+                }
+            );
 
-    scripts: (
-        {
-            filename = "migrate.sh";
-        }
-    );
+            files: (
+                {
+                    filename = "#KERNEL#";
+                    path = "kernel.img";
+                    filesystem = "vfat";
+                    device = "/dev/mmcblk0p1";
+                }
+            );
+
+            scripts: (
+                {
+                    filename = "migrate.sh";
+                }
+            );
+        };
+
+        alt: {
+            images: (
+                {
+                    filename = "#ROOTFS#";
+                    device = "/dev/mmcblk0p4";
+                    compressed = true;
+                }
+            );
+
+            files: (
+                {
+                    filename = "#KERNEL#";
+                    path = "kernel.img";
+                    filesystem = "vfat";
+                    device = "/dev/mmcblk0p3";
+                }
+            );
+
+            scripts: (
+                {
+                    filename = "migrate.sh";
+                }
+            );
+        };
+
+    };
 }
