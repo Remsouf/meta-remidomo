@@ -208,6 +208,8 @@ def graph(request, dataset_name):
 
     config = __get_config()
 
+    show_setpoint = dataset_name == 'all' or config.get_temp_sensor_id(dataset_name) is not None
+
     if dataset_name == 'all':
         if config is not None:
             names = config.get_temp_sensor_names()
@@ -227,7 +229,8 @@ def graph(request, dataset_name):
     context = { 'names': names,
                 'dataset_name': dataset_name,
                 'time_offset': local_offset_hours,
-                'units': units }
+                'units': units,
+                'show_setpoint': show_setpoint }
     return render(request, 'graph.html', context)
 
 def config(request):
@@ -304,6 +307,25 @@ Return graph data in JSON format
 def data(request, name):
     js_cols = [{'label':'dates', 'type':'datetime'}]
 
+    config = __get_config()
+    if config is None:
+        # Not having a config file is acceptable here
+        config = Config(logging.getLogger('django'))
+
+    # Don't show temp. setpoint if graph is energy related
+    show_setpoint = name == 'all' or config.get_temp_sensor_id(name) is not None
+    if show_setpoint:
+        js_cols.append({'label': 'Consigne', 'type': 'number'})
+
+    today = datetime.date.today().weekday()
+    schedule = config.get_schedule(today)
+    if schedule is None or schedule.is_empty():
+        consigne = 0
+    else:
+        now = datetime.datetime.now().time()
+        order = schedule.get_order_for(now)
+        consigne = order.get_value()
+
     if name == 'all':
         config = __get_config()
         if config is not None:
@@ -330,6 +352,8 @@ def data(request, name):
             # Values known for all sensors ? Then go ahead
             if None not in current_values:
                 data_array = [{'v': __python_date_to_js(row.timestamp)}]
+                if show_setpoint:
+                    data_array.append({'v': consigne})
                 for value in current_values:
                     data_array.append({'v': value})
                 js_rows.append({'c': data_array})
@@ -340,8 +364,11 @@ def data(request, name):
 
         js_rows = []
         for row in rows:
-            couple = {'c': [{'v': __python_date_to_js(row.timestamp)}, {'v': row.value}]}
-            js_rows.append(couple)
+            data_array = [{'v': __python_date_to_js(row.timestamp)}]
+	    if show_setpoint:
+                data_array.append({'v': consigne})
+            data_array.append({'v': row.value})
+            js_rows.append({'c': data_array})
 
     js_data = {'cols': js_cols, 'rows': js_rows}
     return HttpResponse(json.dumps(js_data), content_type="application/json")

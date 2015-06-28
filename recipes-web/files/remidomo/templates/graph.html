@@ -65,7 +65,9 @@ function drawChart() {
                  gridlines: { color: '#888888' },
                  minorGridlines: { count: 2, color:'#bbbbbb' }
         },
-        series: [ { color: '#880000', visibleInLegend: {% if dataset_name == 'all' %}true{% else %}false{% endif %} },
+        series: [
+                  {% if show_setpoint %}{ color: '#88ff88', visibleInLegend: false },{% endif %}
+                  { color: '#880000', visibleInLegend: {% if dataset_name == 'all' %}true{% else %}false{% endif %} },
                   { color: '#000088', visibleInLegend: true },
                   { color: '#008800', visibleInLegend: true } ]
     };
