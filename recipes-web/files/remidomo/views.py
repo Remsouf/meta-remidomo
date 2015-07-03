@@ -56,7 +56,7 @@ def __elapsed_time(timestamp):
 
 def __python_date_to_js(timestamp):
     return 'Date(%d,%d,%d,%d,%d,%d)' % (timestamp.year,
-                                        timestamp.month,
+                                        timestamp.month -1,  # 0-based
                                         timestamp.day,
                                         timestamp.hour,
                                         timestamp.minute,
@@ -224,7 +224,7 @@ def graph(request, dataset_name):
         if config is None or dataset_name in config.get_temp_sensor_names():
             units = '\u00B0C'
         else:
-            units = 'W'
+            units = 'kW'
 
     context = { 'names': names,
                 'dataset_name': dataset_name,
