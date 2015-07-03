@@ -111,8 +111,10 @@ def status(request):
     config = __get_config()
     if config is not None:
         names = config.get_temp_sensor_names()
+        power_name = config.get_power_sensors().keys()[0]
     else:
         names = list()
+        power_name = ''
 
     # Temperature sensors
     temp_data = []
@@ -129,7 +131,6 @@ def status(request):
                           'since_when': since_when})
 
     # Power sensor
-    power_name = config.get_power_sensors().keys()[0]
     rows = Mesure.objects.filter(name=power_name).order_by('-timestamp')[:1]
     if rows is None or len(rows) == 0:
         current_power = ''
@@ -240,8 +241,16 @@ def config(request):
         config = Config(logging.getLogger('django'))
 
     # Assume we have only one power sensor here
-    elec = { 'name': config.get_power_sensors().keys()[0],
-             'addr': config.get_power_sensors().values()[0] }
+    if len(config.get_power_sensors()) > 0:
+        elec_name = config.get_power_sensors().keys()[0]
+        elec_addr = config.get_power_sensors().values()[0]
+    else:
+        elec_name = ''
+        elec_addr = ''
+
+    elec = { 'name': elec_name,
+             'addr': elec_addr
+           }
 
     context = { 'rfxport': config.get_rfxlan_port(),
                 'sensors': config.get_temp_sensors(),

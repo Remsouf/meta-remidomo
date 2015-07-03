@@ -64,6 +64,7 @@ class Config:
         self.clear_schedules()
         self.temp_sensors = {}
         self.power_sensors = {}
+        self.heating_sensor_name = ''
 
     def get_day_names(self):
         return self.day_names
