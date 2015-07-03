@@ -19,3 +19,12 @@
     margin-top: 1em;
     width: 95%;
 }
+
+.range {
+    display: table-row;
+}
+
+.range-item {
+    display: table-cell;
+    padding-right: 2em;
+}

@@ -211,6 +211,9 @@ def graph(request, dataset_name):
 
     show_setpoint = dataset_name == 'all' or config.get_temp_sensor_id(dataset_name) is not None
 
+    # Default range
+    range_nb = 5
+    range_units = 'jours'
     if dataset_name == 'all':
         if config is not None:
             names = config.get_temp_sensor_names()
@@ -231,7 +234,9 @@ def graph(request, dataset_name):
                 'dataset_name': dataset_name,
                 'time_offset': local_offset_hours,
                 'units': units,
-                'show_setpoint': show_setpoint }
+                'show_setpoint': show_setpoint,
+                'range_nb': range_nb,
+                'range_units': range_units }
     return render(request, 'graph.html', context)
 
 def config(request):

@@ -16,6 +16,18 @@
         {{ dataset_name|capfirst }}
     {% endif %}
     </div>
+    <div class="range">
+        <div class="range-item">
+            <label for="range_nb"></label>
+            <input readonly id="range_nb" name="range_nb" value="{{ range_nb }}"/>
+        </div>
+        <div class="range-item">
+            <select id="range_units" value="{{ range_units }}">
+                <option>jours</option>
+                <option>mois</option>
+            </select>
+        </div>
+    </div>
     <div class="graph" id="graph"><img style="padding-top: 10em;" src="{% static "images/hourglass.gif" %}"></div>
 </div>
 {% endblock %}
@@ -49,6 +61,11 @@ function drawChart() {
         temp_formatter.format(data, {{ forloop.counter }});
     {% endfor %}
 
+    var DAY_TO_MS = 24 * 60 * 60 * 1000;
+    var now = new Date();
+    var minDate = new Date();
+    minDate.setTime(now.getTime() - 5 * DAY_TO_MS);  // Default: 5 days back
+
     var options = {
         titlePosition: 'none',
         backgroundColor: 'white',
@@ -60,6 +77,7 @@ function drawChart() {
         hAxis: { gridlines: { color: '#888888' },
                  maxTextLines: 5,
                  titleTextStyle: {color: '#555555' },
+                 viewWindow: { min: minDate },
         },
         vAxis: { title: '{{ units }}',
                  gridlines: { color: '#888888' },
@@ -88,6 +106,28 @@ function drawChart() {
     $(window).resize(function() {
         chart.draw(data, options);
     });
+
+    update_graph = function(new_range) {
+        if ($('#range_units').val() == "jours") {
+
+            minDate.setTime(now.getTime() - new_range * DAY_TO_MS);
+        } else {
+            minDate.setTime(now.getTime() - new_range * 30 * DAY_TO_MS);
+        }
+        options.hAxis.viewWindow.min = minDate;
+        chart.draw(data, options);
+    }
+
+    $('#range_units').change(function() {
+        update_graph($('#range_nb').val());
+    }).val("{{ range_units }}");
+
+    $('#range_nb').spinner({
+        min: 1,
+        spin: function(event, ui) {
+            update_graph(ui.value);
+        },
+    }).val({{ range_nb }});
 }
 {% endblock %}
 
