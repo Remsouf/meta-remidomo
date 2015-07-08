@@ -18,7 +18,6 @@ from config import Config
 from orders import Order
 
 SERVICE_LOGFILE = '/var/log/remidomo.log'
-DJANGO_LOGFILE = '/tmp/web.log'
 NGINX_ERROR_LOGFILE = '/var/log/nginx-error.log'
 NGINX_ACCESS_LOGFILE = '/var/log/nginx-access.log'
 CONFIG_FILE = '/etc/remidomo.xml'
@@ -102,7 +101,6 @@ def about(request):
 
 def logs(request):
     context = { 'service_log': __get_log(SERVICE_LOGFILE, 'service'),
-                'django_log': __get_log(DJANGO_LOGFILE, 'Django'),
                 'nginx_error_log': __get_log(NGINX_ERROR_LOGFILE, 'nginx error'),
                 'nginx_access_log': __get_log(NGINX_ACCESS_LOGFILE, 'nginx access')}
     return render(request, 'logs.html', context)
