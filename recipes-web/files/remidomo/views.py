@@ -23,6 +23,11 @@ NGINX_ACCESS_LOGFILE = '/var/log/nginx-access.log'
 CONFIG_FILE = '/etc/remidomo.xml'
 SERVICE_PID_FILE = '/var/run/remidomo.pid'
 
+# Enum-like strings for the DB 'type' column
+DB_TYPE_TEMP = 'temp'
+DB_TYPE_POWER = 'power'
+DB_TYPE_HUMIDITY = 'humidity'
+
 # Methods to retrieve version numbers
 def __get_own_version():
     """
@@ -117,7 +122,7 @@ def status(request):
     # Temperature sensors
     temp_data = []
     for sensor_name in names:
-        rows = Mesure.objects.filter(name=sensor_name).order_by('-timestamp')[:1]
+        rows = Mesure.objects.filter(name=sensor_name).filter(type=DB_TYPE_TEMP).order_by('-timestamp')[:1]
         if rows is None or len(rows) == 0:
             current_temp = ''
             since_when = '?'
@@ -129,7 +134,7 @@ def status(request):
                           'since_when': since_when})
 
     # Power sensor
-    rows = Mesure.objects.filter(name=power_name).order_by('-timestamp')[:1]
+    rows = Mesure.objects.filter(name=power_name).filter(type=DB_TYPE_POWER).order_by('-timestamp')[:1]
     if rows is None or len(rows) == 0:
         current_power = ''
         since_when = '?'
@@ -200,7 +205,7 @@ def program_post(request):
     else:
         return HttpResponse(json.dumps(dict(status='Not Ajax')), content_type='application/json')
 
-def graph(request, dataset_name):
+def graph(request, dataset_name, db_type):
     local_tz = tzlocal()
     local_offset = local_tz.utcoffset(datetime.datetime.now(local_tz))
     local_offset_hours = local_offset.total_seconds() / 3600
@@ -217,16 +222,16 @@ def graph(request, dataset_name):
             names = config.get_temp_sensor_names()
         else:
             names = list()
-
-        units = '\u00B0C'
     else:
         names = list()
         names.append(dataset_name)
 
-        if config is None or dataset_name in config.get_temp_sensor_names():
-            units = '\u00B0C'
-        else:
-            units = 'kW'
+    if db_type == DB_TYPE_TEMP:
+        units = '\u00B0C'
+    elif db_type == DB_TYPE_POWER:
+        units = 'kW'
+    elif db_type == DB_TYPE_HUMIDITY:
+        units = '%'
 
     context = { 'names': names,
                 'dataset_name': dataset_name,
@@ -234,7 +239,8 @@ def graph(request, dataset_name):
                 'units': units,
                 'show_setpoint': show_setpoint,
                 'range_nb': range_nb,
-                'range_units': range_units }
+                'range_units': range_units,
+                'db_type': db_type }
     return render(request, 'graph.html', context)
 
 def config(request):
@@ -316,7 +322,7 @@ def config_post(request):
 """
 Return graph data in JSON format
 """
-def data(request, name):
+def data(request, name, db_type):
     js_cols = [{'label':'dates', 'type':'datetime'}]
 
     config = __get_config()
@@ -345,7 +351,7 @@ def data(request, name):
         else:
             names = list()
 
-        rows = Mesure.objects.order_by('timestamp')
+        rows = Mesure.objects.filter(type=db_type).order_by('timestamp')
         for sensor_name in names:
             js_cols.append({'label': sensor_name.capitalize(), 'type': 'number'})
 
@@ -371,13 +377,14 @@ def data(request, name):
                 js_rows.append({'c': data_array})
 
     else:
-        rows = Mesure.objects.filter(name=name).order_by('timestamp')
+
+        rows = Mesure.objects.filter(name=name).filter(type=db_type).order_by('timestamp')
         js_cols.append({'label': name.capitalize(), 'type': 'number'})
 
         js_rows = []
         for row in rows:
             data_array = [{'v': __python_date_to_js(row.timestamp)}]
-	    if show_setpoint:
+            if show_setpoint:
                 data_array.append({'v': consigne})
             data_array.append({'v': row.value})
             js_rows.append({'c': data_array})

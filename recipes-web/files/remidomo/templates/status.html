@@ -41,7 +41,7 @@
         },
         text: false
     }).click(function() {
-        window.location.href="/graph/all";
+        window.location.href="/graph/all/temp";
     });
     $('#schedule').button({
         icons: {
@@ -61,11 +61,11 @@
     });
     {% for sensor in temperature %}
         $('#frame-{{ sensor.name }}').click(function() {
-            window.location.href="/graph/{{ sensor.name|lower }}";
+            window.location.href="/graph/{{ sensor.name|lower }}/temp";
         });
     {% endfor %}
     $('#frame-{{ power.name }}').click(function() {
-        window.location.href="/graph/{{ power.name|lower }}";
+        window.location.href="/graph/{{ power.name|lower }}/power";
     });
 
     center_elements = function() {

@@ -46,9 +46,9 @@ function drawChart() {
 
     var TZ = 2 * {{ time_offset }};
 
-    var temp_formatter = new google.visualization.NumberFormat({fractionDigits:1, suffix:' {{ units }}'});
+    var value_formatter = new google.visualization.NumberFormat({fractionDigits:1, suffix:' {{ units }}'});
     var date_formatter = new google.visualization.DateFormat({pattern: 'd MMM \u00E0 H:mm', timeZone: TZ});
-    var js_data = $.ajax({ url: "/graph/data/{{ dataset_name }}",
+    var js_data = $.ajax({ url: "/graph/data/{{ dataset_name }}/{{ db_type }}",
                            dataType:"json",
                            async: false
                          }).responseText;
@@ -58,7 +58,7 @@ function drawChart() {
     date_formatter.format(data, 0);
 
     {% for name in names %}
-        temp_formatter.format(data, {{ forloop.counter }});
+        value_formatter.format(data, {{ forloop.counter }});
     {% endfor %}
 
     var DAY_TO_MS = 24 * 60 * 60 * 1000;
