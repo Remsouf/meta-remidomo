@@ -12,7 +12,7 @@ import signal
 sys.path.append('/usr/lib/remidomo/service')
 
 from config import Config
-from database import Database
+from database import Database, TYPE_TEMP
 from executor import Executor
 from rfx_listener import RFXListener
 
@@ -42,7 +42,7 @@ def check_orders(logger, config, executor, database):
     # Execute order, depending on temperature
     sensor_name = config.get_heating_sensor_name()
     sensor_id = config.get_temp_sensor_id(sensor_name)
-    last_measure_time, current_temperature = database.query_latest(sensor_id)
+    last_measure_time, current_temperature = database.query_latest(sensor_id, TYPE_TEMP)
     if current_temperature is None:
         logger.info('Current temperature is not known')
         executor.heating_poweroff()

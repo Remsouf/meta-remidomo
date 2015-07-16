@@ -4,7 +4,7 @@
 from threading import Thread, RLock
 import select
 import socket
-from database import Database
+from database import Database, TYPE_TEMP, TYPE_POWER, TYPE_HUMIDITY
 from xpl_msg import xPLMessage
 
 lock = RLock()
@@ -73,9 +73,17 @@ class RFXListener(Thread):
                 name = self.config.get_temp_sensor_name(device)
 
                 # Insert data into database
-                self.database.insert(device, name, value, units)
+                self.database.insert(device, name, value, units, TYPE_TEMP)
         elif msg_type == 'humidity':
-            pass
+            # Check the device is an interesting one
+            device = message.get_named_value_string('device')
+            if self.config.is_sensor_known(device):
+                value = message.get_named_value_float('current')
+                units = message.get_named_value_string('units')
+                name = self.config.get_temp_sensor_name(device)
+
+                # Insert data into database
+                self.database.insert(device, name, value, units, TYPE_HUMIDITY)
         elif msg_type == 'power':
             # Check the device is an interesting one
             device = message.get_named_value_string('device')
@@ -85,7 +93,7 @@ class RFXListener(Thread):
                 name = self.config.get_power_sensor_name(device)
 
                 # Insert data into database
-                self.database.insert(device, name, value, units)
+                self.database.insert(device, name, value, units, TYPE_POWER)
         elif msg_type == 'energy':
             pass
         elif msg_type == 'battery':
