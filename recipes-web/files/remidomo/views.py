@@ -133,6 +133,20 @@ def status(request):
                           'temp': current_temp,
                           'since_when': since_when})
 
+    # Humidity sensors
+    humidity_data = []
+    for sensor_name in names:
+        rows = Mesure.objects.filter(name=sensor_name).filter(type=DB_TYPE_HUMIDITY).order_by('-timestamp')[:1]
+        if rows is None or len(rows) == 0:
+            current_humidity = ''
+            since_when = '?'
+        else:
+            current_humidity = rows[0].value
+            since_when = __elapsed_time(rows[0].timestamp)
+        humidity_data.append({'name': sensor_name.capitalize(),
+                              'humidity': current_humidity,
+                              'since_when': since_when})
+
     # Power sensor
     rows = Mesure.objects.filter(name=power_name).filter(type=DB_TYPE_POWER).order_by('-timestamp')[:1]
     if rows is None or len(rows) == 0:
@@ -145,7 +159,9 @@ def status(request):
     power_data = { 'name': power_name.capitalize(),
                    'power': current_power,
                    'since_when': since_when }
+
     context = {'temperature': temp_data,
+               'humidity': humidity_data,
                'power': power_data}
     return render(request, 'status.html', context)
 

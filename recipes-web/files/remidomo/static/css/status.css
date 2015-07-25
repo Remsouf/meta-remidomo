@@ -1,5 +1,6 @@
 .status {
     display: table-row;
+    padding: 10px;
 }
 
 .frame-spacer {
@@ -11,13 +12,13 @@
     background-color: #99d1de;
     border-radius: 10px;
     padding: 10px;
-    margin-left: 40px;
-    margin-right: 40px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .gauge {
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
 }
 
 .ilya {
@@ -35,6 +36,29 @@
     display: inline;
     padding-top: 32px;
     padding-bottom: 32px;
-    background-color: #99d1de;
+    background-color: #cbecf4;
     border-radius: 5px;
+}
+
+.sensor-background {
+    display: table-cell;
+    border-radius: 10px;
+    margin-left: 20px;
+    margin-right: 20px;
+    background-color: #cbecf4;
+    border-spacing: 15px;
+}
+
+.sensor-data {
+    display: table-row;
+}
+
+.sensor-logo {
+    width: auto;
+    max-height: 150px;
+    margin-left: 15px;
+}
+
+.sensor-spacer {
+    width: 40px;
 }
