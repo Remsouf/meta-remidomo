@@ -25,9 +25,11 @@
 
 <div id="dialog-consigne" title="Consigne">
     <div class="slider-container">
+        <div class="small-button" id="slider-minus">-</div>
         <div class="temperature-slider">
             <div id="temperature-slider" class="temperature-slider"></div>
         </div>
+        <div class="small-button" id="slider-plus">+</div>
         <div id="temperature-label" class="temperature-label"></div>
         <div class="temperature-units">&deg;C</div>
     </div>
@@ -120,6 +122,14 @@
         change: function(event, ui) {
             $('#temperature-label').html(ui.value.toFixed(1));
         }
+    });
+    $('#slider-minus').button().click(function() {
+        var s = $('#temperature-slider');
+        s.slider('value', s.slider('value') - s.slider( "option", "step" ) );
+    });
+    $('#slider-plus').button().click(function() {
+        var s = $('#temperature-slider');
+        s.slider('value', s.slider('value') + s.slider( "option", "step" ) );
     });
 
     center_buttons = function() {
