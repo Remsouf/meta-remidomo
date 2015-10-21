@@ -2,7 +2,8 @@ import json
 import os
 from subprocess import PIPE, Popen
 import datetime
-from dateutil.parser import parse
+import dateutil
+from dateutil.parser import parse, tz
 from dateutil.tz import tzlocal
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -15,7 +16,7 @@ from models import Mesure
 sys.path.append('../../recipes-service/files')
 sys.path.append('/usr/lib/remidomo/service')
 from config import Config
-from orders import Order
+from orders import Order, Override
 
 SERVICE_LOGFILE = '/var/log/remidomo.log'
 NGINX_ERROR_LOGFILE = '/var/log/nginx-error.log'
@@ -156,13 +157,20 @@ def status(request):
         current_power = rows[0].value
         since_when = __elapsed_time(rows[0].timestamp)
 
+    # Override
+    if config:
+        override_applied = config.get_override_for(datetime.datetime.now()) is not None
+    else:
+        override_applied = False
+
     power_data = { 'name': power_name.capitalize(),
                    'power': current_power,
                    'since_when': since_when }
 
     context = {'temperature': temp_data,
                'humidity': humidity_data,
-               'power': power_data}
+               'power': power_data,
+               'override_applied': override_applied}
     return render(request, 'status.html', context)
 
 def program(request):
@@ -218,6 +226,61 @@ def program_post(request):
         config.save(CONFIG_FILE)
 
         return HttpResponse(json.dumps(dict(status='updated')), content_type='application/json')
+    else:
+        return HttpResponse(json.dumps(dict(status='Not Ajax')), content_type='application/json')
+
+def override_post(request):
+    config = __get_config()
+    if config is None:
+        # Not having a config file is acceptable here
+        config = Config(logging.getLogger('django'))
+
+    if request.is_ajax():
+        json_end_time = request.POST.get('end_time', None)
+        if json_end_time is None:
+            return HttpResponse(json.dumps(dict(status='Pas de date/heure')), content_type='application/json')
+
+        try:
+            end_time = json.loads(json_end_time)
+        except ValueError:
+            return HttpResponse(json.dumps(dict(status='Date/heure invalide : %s' % json_end_time)), content_type='application/json')
+
+        json_value= request.POST.get('value', None)
+        if json_value is None:
+            return HttpResponse(json.dumps(dict(status='Pas de consigne')), content_type='application/json')
+
+        try:
+            value = float(json.loads(json_value))
+        except ValueError:
+            return HttpResponse(json.dumps(dict(status='Consigne invalide : %s' % json_value)), content_type='application/json')
+
+        config.clear_override()
+
+        # Express in our local TZ and remove tzinfo -> make date naive
+        begin = datetime.datetime.now()
+        end = parse(end_time)
+        end = end.astimezone(dateutil.tz.tzlocal()).replace(tzinfo=None)
+        override = Override(begin, end, value)
+        config.set_override(override)
+
+        # Once done, save config file and restart service
+        config.save(CONFIG_FILE)
+
+        return HttpResponse(json.dumps(dict(status='updated')), content_type='application/json')
+    else:
+        return HttpResponse(json.dumps(dict(status='Not Ajax')), content_type='application/json')
+
+def override_clear(request):
+    config = __get_config()
+    if config is None:
+        # Not having a config file is acceptable here
+        config = Config(logging.getLogger('django'))
+
+    if request.is_ajax():
+        config.clear_override()
+        config.save(CONFIG_FILE)
+
+        return HttpResponse(json.dumps(dict(status='cleared')), content_type='application/json')
     else:
         return HttpResponse(json.dumps(dict(status='Not Ajax')), content_type='application/json')
 
@@ -351,13 +414,11 @@ def data(request, name, db_type):
     if show_setpoint:
         js_cols.append({'label': 'Consigne', 'type': 'number'})
 
-    today = datetime.date.today().weekday()
-    schedule = config.get_schedule(today)
-    if schedule is None or schedule.is_empty():
+    now = datetime.datetime.now()
+    order = config.get_order_for(now)
+    if order is None:
         consigne = 0
     else:
-        now = datetime.datetime.now().time()
-        order = schedule.get_order_for(now)
         consigne = order.get_value()
 
     if name == 'all':

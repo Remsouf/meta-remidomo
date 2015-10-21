@@ -53,6 +53,30 @@
     background-image: url(/static/images/check-hover.png);
 }
 
+.ui-button .ui-icon.custom-icon-override-off {
+    background-image: url(/static/images/override-off.png);
+    width: 48px;
+    height: 48px;
+    left: 16px;
+    top: 16px;
+}
+
+.ui-button .ui-icon.custom-icon-override-off:hover {
+    background-image: url(/static/images/override-off-hover.png);
+}
+
+.ui-button .ui-icon.custom-icon-override-on {
+    background-image: url(/static/images/override-on.png);
+    width: 48px;
+    height: 48px;
+    left: 16px;
+    top: 16px;
+}
+
+.ui-button .ui-icon.custom-icon-override-on:hover {
+    background-image: url(/static/images/override-on-hover.png);
+}
+
 .ui-button .ui-icon.custom-icon-off {
     background-image: url(/static/images/ledoff.png);
     width: 48px;

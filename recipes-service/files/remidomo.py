@@ -7,7 +7,6 @@ import os
 import sys
 import time
 import datetime
-import signal
 
 sys.path.append('/usr/lib/remidomo/service')
 
@@ -19,23 +18,16 @@ from rfx_listener import RFXListener
 VERSION = '##REMIDOMO_VERSION##'
 MEASUREMENT_AGE = 60 * 30  # 30min
 
+
 def check_orders(logger, config, executor, database):
     if not config.is_heating_enabled():
         return
 
-    # Get the schedule for today
-    today = datetime.date.today().weekday()
-    schedule = config.get_schedule(today)
-    if schedule is None or schedule.is_empty():
-        logger.info('No order for %s' % config.day_names[today])
-        executor.heating_poweroff()
-        return
-
     # Get the temperature order for now
-    now = datetime.datetime.now().time()
-    order = schedule.get_order_for(now)
+    now = datetime.datetime.now()
+    order = config.get_order_for(now)
     if order is None:
-        logger.info('No order for %s @ %s' % (config.day_names[today], now.strftime('%H:%M')))
+        logger.info('No order for %s @ %s' % (config.day_names[now.weekday()], now.strftime('%H:%M')))
         executor.heating_poweroff()
         return
 
@@ -65,6 +57,7 @@ def check_orders(logger, config, executor, database):
         executor.heating_poweroff()
 
     # Else, no state change
+
 
 def main():
     parser = OptionParser()

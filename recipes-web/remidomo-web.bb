@@ -5,6 +5,8 @@ PR = "r0"
 
 RDEPENDS_${PN} = "bash python python-django python-modules python-misc python-flup python-dateutil"
 
+DEPENDS = "jquery-ui-timepicker-addon"
+
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/CC-BY-NC-3.0;md5=da665b47544b8cf138600d9e2aeefadd"
 
 SRC_URI = "file://manage.py \

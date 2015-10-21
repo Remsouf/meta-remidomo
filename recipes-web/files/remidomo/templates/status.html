@@ -4,7 +4,10 @@
 {% block extrastyle %}
 <link rel="stylesheet" type="text/css" href="{% static "css/status.css" %}" />
 <link rel="stylesheet" type="text/css" href="{% static "css/custom-icons.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "css/consigne-dialog.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery-ui-timepicker-addon.css" %}" />
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script src="{% static "js/jquery-ui-timepicker-addon.js" %}"></script>
 {% endblock %}
 
 {% block title %}Tableau de bord{% endblock %}
@@ -59,7 +62,30 @@
 <div class="buttons" id="buttons">
     <div class="button" id="graphs">&nbsp;</div>
     <div class="button" id="schedule">&nbsp;</div>
+    <div class="button" id="override">&nbsp;</div>
     <div class="button" id="refresh">&nbsp;</div>
+</div>
+
+<div id="dialog-override" title="D&eacute;rogation">
+    <div class="slider-container">
+        <div class="small-button" id="slider-minus">-</div>
+        <div class="temperature-slider">
+            <div id="temperature-slider" class="temperature-slider"></div>
+        </div>
+        <div class="small-button" id="slider-plus">+</div>
+        <div id="temperature-label" class="temperature-label"></div>
+        <div class="temperature-units">&deg;C</div>
+    </div>
+    <label for="datepicker">Jusqu'&agrave; :</label>
+    <input id="datepicker" />
+</div>
+
+<div id="override-success" title="Confirmation">
+    <div class="saving">D&eacute;rogation sauvegard&eacute;e.</div>
+</div>
+<div id="override-failure" title="Erreur !">
+    <div class="saving">D&eacute;rogation non appliqu&eacute;e :</div>
+    <div id="override-failure-msg" class="override-error"></div>
 </div>
 {% endblock %}
 
@@ -88,6 +114,159 @@
     }).click(function() {
         window.location.reload();
     });
+    $('#override').button({
+        icons: {
+            primary: "custom-icon-override-off"
+        },
+        text: false
+    }).click(function() {
+
+        {% if override_applied %}
+        $.ajax({ url: '/override/clear',
+             type: 'POST',
+             data: { csrfmiddlewaretoken: '{{ csrf_token }}' },
+             success: function(response) {
+                if (response.status == 'cleared') {
+                    window.location.reload();
+                } else {
+                    $('#override-failure-msg').html(response.status);
+                    $('#override-failure').dialog("open");
+                }
+             },
+             error: function(xhr, textStatus, thrownError) {
+                $('#override-failure-msg').html(xhr.status + ": " + xhr.responseText);
+                $('#override-failure').dialog("open");
+             }
+        });
+        {% else %}
+        // Init value for the dialog
+        $('#temperature-slider').slider('value', 20);
+
+        // Callback to post override when dialog is accepted
+        $('#dialog-override').one('submit', function(event, ui) {
+
+            $.ajax({ url: '/override/post',
+                 type: 'POST',
+                 data: { csrfmiddlewaretoken: '{{ csrf_token }}',
+                         end_time: JSON.stringify($('#datepicker').datetimepicker('getDate')),
+                         value: JSON.stringify($('#temperature-slider').slider('value')),
+                       },
+                 success: function(response) {
+                    if (response.status == 'updated') {
+                        $('#override-success').dialog("open");
+                        $('#override-success').one('submit', function(event, ui) {
+                            window.location.reload();
+                        });
+                    } else {
+                        $('#override-failure-msg').html(response.status);
+                        $('#override-failure').dialog("open");
+                    }
+                 },
+                 error: function(xhr, textStatus, thrownError) {
+                    $('#override-failure-msg').html(xhr.status + ": " + xhr.responseText);
+                    $('#override-failure').dialog("open");
+                 }
+            });
+        });
+
+        // Fire dialog
+        $('#dialog-override').dialog("open");
+        {% endif %}
+    });
+
+    $('#dialog-override').dialog({
+        modal: true,
+        autoOpen: false,
+        draggable: true,
+        resizable: false,
+        width: 'auto',
+        buttons: {
+            Ok: function() {
+                $(this).trigger("submit");
+                $(this).dialog("close");
+            }
+        }
+    });
+    $('#temperature-slider').slider({
+        min: 10,
+        max: 30,
+        step: 0.5,
+        slide: function(event, ui) {
+            $('#temperature-label').html(ui.value.toFixed(1));
+        },
+        change: function(event, ui) {
+            $('#temperature-label').html(ui.value.toFixed(1));
+        }
+    });
+    $('#slider-minus').button().click(function() {
+        var s = $('#temperature-slider');
+        s.slider('value', s.slider('value') - s.slider( "option", "step" ) );
+    });
+    $('#slider-plus').button().click(function() {
+        var s = $('#temperature-slider');
+        s.slider('value', s.slider('value') + s.slider( "option", "step" ) );
+    });
+
+    $('#override-success').dialog({
+        modal: true,
+        autoOpen: false,
+        draggable: true,
+        resizable: false,
+        width: 'auto',
+        buttons: {
+            Ok: function() {
+                 $(this).trigger("submit");
+                 $(this).dialog("close");
+            }
+        }
+    });
+    $('#override-failure').dialog({
+        modal: true,
+        autoOpen: false,
+        draggable: true,
+        resizable: false,
+        width: 'auto',
+        buttons: {
+            Ok: function() { $(this).dialog("close"); }
+        }
+    });
+
+    $.timepicker.regional['fr'] = {
+        monthNamesMin: ['Ja', 'F&eacute;', 'Ma', 'Av', 'Ma', 'Jn', 'Jl', 'Ao', 'Se', 'Oc', 'No', 'D&eacute;'],
+        monthNamesShort: ['Jan', 'F&eacute;v', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Ao&ucirc;', 'Sep', 'Oct', 'Nov', 'D&eacute;c'],
+        monthNames: ['Janvier', 'F&eacute;vrier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Ao&ucirc;t', 'Septembre', 'Octobre', 'Novembre', 'D&eacute;cembre'],
+        dayNamesMin: ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'],
+        dayNamesShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+        dayNames: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+        firstDay: 1,
+        timeText: 'Heure',
+        hourText: 'Heures',
+        minuteText: 'Minutes',
+        secondText: 'Secondes',
+        timeFormat: 'HH:mm',
+        timeSuffix: '',
+    };
+    $.timepicker.setDefaults($.timepicker.regional['fr']);
+
+    var now = new Date();
+    $('#datepicker').datetimepicker({
+        showOn: "button",
+        showButtonPanel: false,
+        defaultDate: 0,
+        hour: now.getHours(),
+        minute: now.getMinutes(),
+    });
+
+    {% if override_applied %}
+    $('#override').button({
+        icons: { primary: "custom-icon-override-on" }
+    });
+    {% else %}
+    $('#override').button({
+        icons: { primary: "custom-icon-override-off" }
+    });
+    {% endif %}
+
     {% for sensor in temperature %}
         $('#frame-{{ sensor.name }}-temp').click(function() {
             window.location.href="/graph/{{ sensor.name|lower }}/temp";

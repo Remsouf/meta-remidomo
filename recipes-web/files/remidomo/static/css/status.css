@@ -62,3 +62,13 @@
 .sensor-spacer {
     width: 40px;
 }
+
+.saving {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.override-error {
+    font-style: italic;
+    text-align: center;
+}

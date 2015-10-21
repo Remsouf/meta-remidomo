@@ -17,30 +17,6 @@
     text-align: center;
 }
 
-.slider-container {
-    display: table-row;
-    vertical-align: middle;
-}
-
-.temperature-slider {
-    display: table-cell;
-    width: 20em;
-    vertical-align: middle;
-}
-
-.temperature-label {
-    display: table-cell;
-    width: 2.5em;
-    font-size: 2em;
-    text-align: left;
-    padding-left: 0.5em;
-}
-
-.temperature-units {
-    display: table-cell;
-    vertical-align: top;
-}
-
 .saving {
     font-size: 1.5em;
     text-align: center;
@@ -71,26 +47,4 @@
 /* Override active state for power button (to be the same as default) */
 #power-button.ui-state-active {
     background: #e6e6e6 url("/static/js/images/ui-bg_glass_75_e6e6e6_1x400.png") repeat-x scroll 50% 50%
-}
-
-.small-button {
-    width: 24px;
-    height: 24px;
-    top: -8px;
-}
-
-#slider-minus {
-    margin-right: 16px;
-}
-
-#slider-minus span {
-    padding: 2px;
-}
-
-#slider-plus {
-    margin-left: 16px;
-}
-
-#slider-plus span {
-    padding: 2px;
 }

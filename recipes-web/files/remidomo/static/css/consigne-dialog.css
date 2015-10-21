@@ -1,0 +1,45 @@
+.slider-container {
+    display: table-row;
+    vertical-align: middle;
+}
+
+.temperature-slider {
+    display: table-cell;
+    width: 20em;
+    vertical-align: middle;
+}
+
+.temperature-label {
+    display: table-cell;
+    width: 2.5em;
+    font-size: 2em;
+    text-align: left;
+    padding-left: 0.5em;
+}
+
+.temperature-units {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.small-button {
+    width: 24px;
+    height: 24px;
+    top: -8px;
+}
+
+#slider-minus {
+    margin-right: 16px;
+}
+
+#slider-minus span {
+    padding: 2px;
+}
+
+#slider-plus {
+    margin-left: 16px;
+}
+
+#slider-plus span {
+    padding: 2px;
+}

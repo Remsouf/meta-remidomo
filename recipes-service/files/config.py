@@ -10,7 +10,7 @@ import unittest
 from xml.dom import minidom
 import xml.etree.ElementTree as ET
 import datetime
-from orders import Order, Schedule
+from orders import Order, Schedule, Override
 
 DEFAULT_HYSTERESIS = 1.0
 DEFAULT_RFXLAN_PORT = 3865
@@ -39,6 +39,8 @@ ATTRIB_UNDER = 'negatif'
 
 TAG_ORDER = 'consigne'
 
+TAG_OVERRIDE = 'derogation'
+
 
 class Config:
 
@@ -65,9 +67,19 @@ class Config:
         self.temp_sensors = {}
         self.power_sensors = {}
         self.heating_sensor_name = ''
+        self.override = None
 
     def get_day_names(self):
         return self.day_names
+
+    def get_order_for(self, datetime):
+        # Is there an override ?
+        override = self.get_override_for(datetime)
+        if override:
+            return override
+
+        schedule = self.get_schedule(datetime.weekday())
+        return schedule.get_order_for(datetime.get_time())
 
     def get_schedule(self, day):
         return self.schedule[day]
@@ -156,6 +168,24 @@ class Config:
     def add_power_sensor(self, name, address):
         self.power_sensors[name] = address
 
+    def set_override(self, override):
+        if override.is_valid():
+            self.override = override
+        else:
+            self.override = None
+
+    def get_override(self):
+        return self.override
+
+    def get_override_for(self, datetime):
+        if self.override is None:
+            return None
+        if self.override.begin <= datetime <= self.override.end:
+            return self.override
+
+    def clear_override(self):
+        self.override = None
+
     """
     Write a config (XML) file
     """
@@ -204,7 +234,7 @@ class Config:
         for child in node:
             if child.tag == TAG_TEMPERATURE:
                 if ATTRIB_ID in child.attrib:
-                   id = child.attrib[ATTRIB_ID]
+                    id = child.attrib[ATTRIB_ID]
                 else:
                     raise ET.ParseError('Missing "%s" attribute for tag "%s"' % (ATTRIB_ID, TAG_TEMPERATURE))
                 if ATTRIB_NAME in child.attrib:
@@ -249,6 +279,9 @@ class Config:
             if child.tag == TAG_DAY:
                 self.__parse_day(child)
 
+            if child.tag == TAG_OVERRIDE:
+                self.__parse_override(child)
+
     def __parse_day(self, node):
         # Convert day name to day index
         if ATTRIB_DAY_NAME in node.attrib:
@@ -281,6 +314,14 @@ class Config:
             self.schedule[day_index].add_order(order)
         except ET.ParseError, e:
             raise ET.ParseError('Day "%s" contains a bad order: %s' % (self.day_names[day_index], e.message))
+
+    def __parse_override(self, node):
+        try:
+            override = Override()
+            override.parse(node)
+            self.override = override
+        except ET.ParseError, e:
+            raise ET.ParseError('Bad override: %s' % e.message)
 
     """
     Build XML string describing config
@@ -315,6 +356,10 @@ class Config:
             for order in self.get_schedule(index).get_orders():
                 order_node = ET.SubElement(day, TAG_ORDER)
                 order.generateXml(order_node)
+
+        if self.override:
+            override_node = ET.SubElement(chauffage, TAG_OVERRIDE)
+            self.override.generateXml(override_node)
 
         string = ET.tostring(root)
         reparsed = minidom.parseString(string)
@@ -458,6 +503,31 @@ class TestConfig(unittest.TestCase):
         self.assertEqual('<?xml version="1.0" ?>\n<remidomo>\n  <rfxlan port="3865"/>\n  <chauffage capteur="" mode="off">\n    <hysteresis negatif="34.21" positif="12.34"/>\n    ' +
                          '<quotidien jour="lundi"/>\n    <quotidien jour="mardi"/>\n    <quotidien jour="mercredi"/>\n    <quotidien jour="jeudi"/>\n    ' +
                          '<quotidien jour="vendredi"/>\n    <quotidien jour="samedi"/>\n    <quotidien jour="dimanche"/>\n  </chauffage>\n</remidomo>\n', config.to_xml())
+
+    def testCanParseOverride(self):
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="on"></chauffage></remidomo>')
+        self.assertIsNone(config.get_override())
+
+        config = Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="on"><derogation debut="21/10/2015 14:00" fin="21/10/2015 14:05" temperature="123"/></chauffage></remidomo>')
+        self.assertAlmostEqual(123, config.get_override_for(datetime.datetime(2015, 10, 21, 14, 2)).get_value(), self.DECIMAL_COMPARE_PLACES)
+        self.assertIsNone(config.get_override_for(datetime.datetime(2015, 10, 21, 13, 59)))
+        self.assertIsNone(config.get_override_for(datetime.datetime(2015, 10, 21, 14, 06)))
+        self.assertIsNone(config.get_override_for(datetime.datetime(2015, 10, 22, 14, 2)))
+
+    def testCannotParseBadOverride(self):
+        # Missing attributes
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="on"><derogation/></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="on"><derogation fin="14/01/1977 12:00" temperature="123"/></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="on"><derogation debut="14/01/1977 12:00" temperature="123"/></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="on"><derogation debut="14/01/1977 08:00" fin="14/01/1977 12:00"/></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="on"><derogation debut="14/01/1977 08:00" fin="14/01/1977 12:00" temperature="abc"/></chauffage></remidomo>')
+        with self.assertRaises(ET.ParseError):
+            Config(self.logger).parse_string('<remidomo><chauffage capteur="essai" mode="on"><derogation debut="14/01|1977 08:00" fin="14/01/1977 12:00" temperature="123"/></chauffage></remidomo>')
 
 
 if __name__ == '__main__':
