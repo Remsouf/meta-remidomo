@@ -4,6 +4,8 @@ IMAGE_INSTALL += "remidomo-service remidomo-web nginx ntp wpa-supplicant tzdata 
 
 IMAGE_LINGUAS = "fr-fr en-us"
 
+KERNEL_IMAGETYPE = "kernel.img"
+
 ROOTFS_PREPROCESS_COMMAND += "check_vars;"
 ROOTFS_POSTPROCESS_COMMAND += "set_root_passwd; set_wpa_supplicant; set_crontab;"
 
