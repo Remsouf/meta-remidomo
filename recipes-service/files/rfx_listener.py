@@ -9,10 +9,12 @@ from xpl_msg import xPLMessage
 
 lock = RLock()
 
-"""
-Class to implement a thread listening to rfx-lan messages
-"""
+
 class RFXListener(Thread):
+    """
+    Class to implement a thread listening to rfx-lan messages
+    """
+
     # RFX packets are rather small...
     RECV_SIZE = 512
 
@@ -55,7 +57,7 @@ class RFXListener(Thread):
     def stop(self):
         self.logger.debug('Stopping RFX thread (can take up to %ds)' % self.SELECT_TIMEOUT)
         self.terminated = True
-        #self._Thread__stop()
+        # self._Thread__stop()
 
     def handle_message(self, message):
         if message.get_schema_class() != 'sensor':

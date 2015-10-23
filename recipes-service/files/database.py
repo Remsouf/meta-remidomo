@@ -13,7 +13,7 @@ DB_PATH = '/var/remidomo/db.sqlite3'
 TABLE_NAME = 'remidomo_mesure'
 
 COMPRESS = True
-SAMPLING_PERIOD = 30*60  # 30 min
+SAMPLING_PERIOD = 30 * 60  # 30 min
 MAX_VARIATION_TEMP = 0.5  # °C
 MAX_VARIATION_HUMIDITY = 10  # °H
 MAX_VARIATION_POWER = 0.1  # kW
@@ -70,11 +70,13 @@ class Database:
                     max_variation = MAX_VARIATION_HUMIDITY
                 elif type == TYPE_POWER:
                     max_variation = MAX_VARIATION_POWER
+                else:
+                    assert False
 
-                if ((now-time1 < SAMPLING_PERIOD) and
-                    (math.fabs(value - value1) < max_variation) and
-                    (time1 - time2 < SAMPLING_PERIOD) and
-                    (math.fabs(value1 - value2) < max_variation)):
+                if (now - time1 < SAMPLING_PERIOD) and \
+                   (math.fabs(value - value1) < max_variation) and \
+                   (time1 - time2 < SAMPLING_PERIOD) and \
+                   (math.fabs(value1 - value2) < max_variation):
                     self.connection.execute('DELETE FROM %s WHERE name="%s" AND id=(SELECT MAX(id) FROM %s WHERE name="%s" AND type="%s")' % (TABLE_NAME, name, TABLE_NAME, name, type))
 
         # In all cases, insert the latest value

@@ -186,18 +186,18 @@ class Config:
     def clear_override(self):
         self.override = None
 
-    """
-    Write a config (XML) file
-    """
     def save(self, output_file):
+        """
+        Write a config (XML) file
+        """
         self.logger.info('Ecriture du fichier de config : %s' % output_file)
         with open(output_file, 'w') as desc:
             desc.write(self.to_xml())
 
-    """
-    Read a config (XML) file
-    """
     def read_file(self, input_file):
+        """
+        Read a config (XML) file
+        """
         self.logger.info('Lecture du fichier de config : %s' % input_file)
         with open(input_file, 'r') as desc:
             try:
@@ -205,10 +205,10 @@ class Config:
             except ET.ParseError, e:
                 self.logger.error('Erreur de parsing : %s' % e.message)
 
-    """
-    Parse a string containing the XML config
-    """
     def parse_string(self, string):
+        """
+        Parse a string containing the XML config
+        """
         self.set_defaults()
         root = ET.fromstring(string)
         if root.tag != TAG_ROOT:
@@ -323,10 +323,10 @@ class Config:
         except ET.ParseError, e:
             raise ET.ParseError('Bad override: %s' % e.message)
 
-    """
-    Build XML string describing config
-    """
     def to_xml(self):
+        """
+        Build XML string describing config
+        """
         root = ET.Element(TAG_ROOT)
         rfxlan = ET.SubElement(root, TAG_SENSORS)
         rfxlan.set(ATTRIB_PORT, str(self.get_rfxlan_port()))

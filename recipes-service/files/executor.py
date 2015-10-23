@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import pifacecommon
-
 import pifacedigitalio
 
-"""
-Class for triggering hardware
-"""
+
 class Executor:
+    """
+    Class for triggering hardware
+    """
     RELAY_PIN = 0
 
     def __init__(self, config, logger):

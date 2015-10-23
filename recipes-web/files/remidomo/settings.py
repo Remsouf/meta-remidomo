@@ -26,9 +26,6 @@ TEMPLATE_DEBUG = True
 
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'remidomo/templates')]
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'remidomo/static'),)
-STATIC_URL = '/static/'
-
 ALLOWED_HOSTS = ['*']
 
 
@@ -66,7 +63,7 @@ LOGIN_URL = '/login'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join('/var/remidomo/', 'db.sqlite3'),
+        'NAME': os.path.join('/var/remidomo', 'db.sqlite3'),
     }
 }
 
@@ -86,6 +83,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'remidomo/static'),)
 STATIC_URL = '/static/'
 
 LOGGING_CONFIG = None
@@ -101,7 +99,7 @@ LOGGING = {
         },
     },
     'handlers': {
-        'console':{
+        'console': {
             'level': 'WARNING',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',

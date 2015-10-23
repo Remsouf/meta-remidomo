@@ -3,17 +3,18 @@
 
 import unittest
 
-"""
-Exception raised when parsing fails
-"""
+
 class xPLException(Exception):
+    """
+    Exception raised when parsing fails
+    """
     pass
 
 
-"""
-Class to encapsulate an xPL message
-"""
 class xPLMessage:
+    """
+    Class to encapsulate an xPL message
+    """
 
     # schema types
     STATUS = 'xpl-stat'
@@ -86,9 +87,9 @@ class xPLMessage:
         if len(lines) == 0:
             raise xPLException('Missing message type')
         msg_type = lines[0].strip()
-        if (msg_type != self.COMMAND and
-            msg_type != self.STATUS and
-            msg_type != self.TRIGGER):
+        if msg_type != self.COMMAND and \
+           msg_type != self.STATUS and \
+           msg_type != self.TRIGGER:
             raise xPLException('Unknown message type "%s"' % type)
 
         self.msg_type = msg_type

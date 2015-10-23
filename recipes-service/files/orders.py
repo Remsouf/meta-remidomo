@@ -7,7 +7,6 @@ Classes used to represent timed orders
 import unittest
 from xml.etree.ElementTree import ParseError
 import datetime
-import dateutil
 
 ATTRIB_BEGIN = 'debut'
 ATTRIB_END = 'fin'
@@ -20,10 +19,10 @@ def time_to_js(time):
     return 'new Date(0,0,0,%d,%d)' % (time.hour, time.minute)
 
 
-"""
-A schedule, i.e. a set of orders for a same day
-"""
 class Schedule:
+    """
+    A schedule, i.e. a set of orders for a same day
+    """
     def __init__(self):
         self.orders = []
 
@@ -46,10 +45,10 @@ class Schedule:
         return self.orders
 
 
-"""
-An order, i.e. a time range and a value
-"""
 class Order:
+    """
+    An order, i.e. a time range and a value
+    """
     def __init__(self, begin=None, end=None, value=None):
         self.begin = begin
         self.end = end
@@ -117,11 +116,11 @@ class Order:
         node.set(ATTRIB_VALUE, str(self.get_value()))
 
 
-"""
-An override, with a fixed value during a limited amount of time
-(similar to an order, but with date+time instead of just time)
-"""
 class Override:
+    """
+    An override, with a fixed value during a limited amount of time
+    (similar to an order, but with date+time instead of just time)
+    """
     def __init__(self, begin=None, end=None, value=None):
         self.begin = begin
         self.end = end

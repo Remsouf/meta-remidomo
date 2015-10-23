@@ -5,7 +5,8 @@ admin.autodiscover()
 
 import views
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^$', views.status, name='status'),
 
     url(r'^about/', views.about, name='about'),
