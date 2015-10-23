@@ -5,6 +5,7 @@ import datetime
 import dateutil
 from dateutil.parser import parse, tz
 from dateutil.tz import tzlocal
+import django
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
@@ -105,7 +106,8 @@ def __get_log(path, name):
 # Views
 def about(request):
     context = { 'service_version': __get_service_version(),
-                'web_version': __get_own_version() }
+                'web_version': __get_own_version(),
+                'fwk_version': django.get_version() }
     return render(request, 'about.html', context)
 
 def logs(request):
