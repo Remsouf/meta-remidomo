@@ -21,5 +21,6 @@ urlpatterns = patterns('',
     url(r'^graph/([a-z]+)/([a-z]+)', views.graph, name='graphe'),
     url(r'^config/post', views.config_post, name='configuration-edit'),
     url(r'^config/', views.config, name='configuration'),
+    url(r'^login/.*', views.login, name='login'),
+    url(r'^logout/', views.logout, name='logout'),
 )
-

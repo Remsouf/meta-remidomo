@@ -267,6 +267,12 @@
     });
     {% endif %}
 
+    {% if user.is_authenticated %}
+    $('#override').button('enable');
+    {% else %}
+    $('#override').button('disable');
+    {% endif %}
+
     {% for sensor in temperature %}
         $('#frame-{{ sensor.name }}-temp').click(function() {
             window.location.href="/graph/{{ sensor.name|lower }}/temp";

@@ -5,8 +5,11 @@ import datetime
 import dateutil
 from dateutil.parser import parse, tz
 from dateutil.tz import tzlocal
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.contrib import auth
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render, render_to_response
+from django.template import RequestContext
 import logging
 import re
 import itertools
@@ -173,6 +176,7 @@ def status(request):
                'override_applied': override_applied}
     return render(request, 'status.html', context)
 
+@login_required
 def program(request):
     week_data = []
 
@@ -190,6 +194,7 @@ def program(request):
                 'iterator': itertools.count()}
     return render(request, 'program.html', context)
 
+@login_required
 def program_post(request):
     config = __get_config()
     if config is None:
@@ -229,6 +234,7 @@ def program_post(request):
     else:
         return HttpResponse(json.dumps(dict(status='Not Ajax')), content_type='application/json')
 
+@login_required
 def override_post(request):
     config = __get_config()
     if config is None:
@@ -270,6 +276,7 @@ def override_post(request):
     else:
         return HttpResponse(json.dumps(dict(status='Not Ajax')), content_type='application/json')
 
+@login_required
 def override_clear(request):
     config = __get_config()
     if config is None:
@@ -468,3 +475,49 @@ def data(request, name, db_type):
 
     js_data = {'cols': js_cols, 'rows': js_rows}
     return HttpResponse(json.dumps(js_data), content_type="application/json")
+
+"""
+Login view
+"""
+def login(request):
+    context = RequestContext(request)
+
+    # If the request is a HTTP POST, try to pull out the relevant information.
+    if request.method == 'POST':
+        # Gather the username and password provided by the user.
+        # This information is obtained from the login form.
+        username = request.POST['username']
+        password = request.POST['password']
+
+        # Use Django's machinery to attempt to see if the username/password
+        # combination is valid - a User object is returned if it is.
+        user = auth.authenticate(username=username, password=password)
+
+        # If we have a User object, the details are correct.
+        # If None (Python's way of representing the absence of a value), no user
+        # with matching credentials was found.
+        if user:
+            # Is the account active? It could have been disabled.
+            if user.is_active:
+                # If the account is valid and active, we can log the user in.
+                print "User %s logged in successfully." % username
+                auth.login(request, user)
+                return HttpResponseRedirect('/status/')  # request.POST['next'])
+            else:
+                # An inactive account was used - no logging in !
+                return render_to_response('denied.html', {'reason' : 'Le compte est d&eacute;sactiv&eaccute;.'}, context)
+        else:
+            # Bad login details were provided. So we can't log the user in.
+            print "User %s not logged in, wrong credentials" % username
+            return render_to_response('denied.html', {'reason' : "Le nom d'utilisateur ou le mot de passe sont invalides."}, context)
+
+    # The request is not a HTTP POST, so display the login form.
+    # This scenario would most likely be a HTTP GET.
+    else:
+        # No context variables to pass to the template system, hence the
+        # blank dictionary object...
+        return render_to_response('login.html', {'next' : request.GET['next']}, context)
+
+def logout(request):
+    auth.logout(request)
+    return HttpResponseRedirect('/status/')

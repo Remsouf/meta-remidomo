@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static "css/login.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "css/custom-icons.css" %}" />
+{% endblock %}
+
+{% block title %}Identification{% endblock %}
+
+{% block content %}
+<div class="frame" id="frame">
+
+    <form id="login_form" method="post" action="/login/">
+        {% csrf_token %}
+
+        <div style="display: table-row;">
+            <div style="display:table-cell;">Utilisateur </div>
+            <div class="creds"><input type="text" name="username"/></div>
+        </div>
+
+        <div style="display: table-row;">&nbsp;</div>
+
+        <div style="display: table-row;">
+            <div style="display:table-cell;">Mot de passe</div>
+            <div class="creds"><input id="password" type="password" name="password" value="" /></div>
+        </div>
+
+        <input type="hidden" name="next" value="{{ next }}" />
+        <div class="button" id="submit"></div>
+    </form>
+</div>
+{% endblock %}
+
+{% block script %}
+
+$('#submit').button({
+    icons: {
+        primary: "custom-icon-check"
+    },
+    text: false
+}).click(function() {
+    $('#login_form').submit();
+});
+
+$('#password').keypress(function (e) {
+    if (e.which == 13) {
+        $('#login_form').submit();
+        return false;
+    }
+});
+
+$('#frame').position({
+    my: "center",
+    at: "center",
+    of: window
+});
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static "css/login.css" %}" />
+{% endblock %}
+
+{% block title %}Identification{% endblock %}
+
+{% block content %}
+<div class="frame" id="frame">
+        <div style="text-align: center;">{{ reason }}</div>
+    </form>
+</div>
+{% endblock %}
+
+{% block script %}
+
+$('#submit').button();
+
+$('#frame').position({
+    my: "center",
+    at: "center",
+    of: window
+});
+
+$(document).ready(function () {
+    window.setInterval(function () {
+        window.location.href = "/status/";
+    }, 5000);
+});
+
+{% endblock %}

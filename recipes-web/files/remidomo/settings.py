@@ -57,6 +57,8 @@ ROOT_URLCONF = 'remidomo.urls'
 
 WSGI_APPLICATION = 'remidomo.wsgi.application'
 
+LOGIN_URL = '/login'
+
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
