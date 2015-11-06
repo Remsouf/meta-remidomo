@@ -33,6 +33,9 @@ DB_TYPE_TEMP = 'temp'
 DB_TYPE_POWER = 'power'
 DB_TYPE_HUMIDITY = 'humidity'
 
+# Plot data on graph not older than N days
+MAX_GRAPH_DAYS_BACK = 30
+
 
 # Methods to retrieve version numbers
 def __get_own_version():
@@ -456,13 +459,15 @@ def data(_, name, db_type):
     else:
         consigne = order.get_value()
 
+    no_later_than = now - datetime.timedelta(days=MAX_GRAPH_DAYS_BACK)
+
     if name == 'all':
         if conf is not None:
             names = conf.get_temp_sensor_names()
         else:
             names = list()
 
-        rows = Mesure.objects.filter(type=db_type).order_by('timestamp')
+        rows = Mesure.objects.filter(type=db_type).filter(timestamp__range=(no_later_than, now)).order_by('timestamp')
         for sensor_name in names:
             js_cols.append({'label': sensor_name.capitalize(), 'type': 'number'})
 
@@ -486,10 +491,9 @@ def data(_, name, db_type):
                 for value in current_values:
                     data_array.append({'v': value})
                 js_rows.append({'c': data_array})
-
     else:
 
-        rows = Mesure.objects.filter(name=name).filter(type=db_type).order_by('timestamp')
+        rows = Mesure.objects.filter(name=name).filter(type=db_type).filter(timestamp__range=(no_later_than, now)).order_by('timestamp')
         js_cols.append({'label': name.capitalize(), 'type': 'number'})
 
         js_rows = []
