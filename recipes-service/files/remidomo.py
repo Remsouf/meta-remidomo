@@ -7,6 +7,7 @@ import os
 import sys
 import time
 import datetime
+import sqlite3
 
 sys.path.append('/usr/lib/remidomo/service')
 
@@ -116,6 +117,9 @@ def main():
         try:
             check_orders(logger, config, executor, database)
             time.sleep(60)
+        except sqlite3.OperationalError, e:
+            logger.warning('DB error: %s' % e)
+            # Do nothing more, and retry (probably just a 'database is locked' error)
         except KeyboardInterrupt:
             print >> sys.stderr, '\nExiting by user request.\n'
             executor.heating_poweroff()
