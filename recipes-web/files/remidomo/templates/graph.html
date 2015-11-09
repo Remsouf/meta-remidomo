@@ -53,7 +53,11 @@ function drawChart() {
                            async: false
                          }).responseText;
 
-    var data = new google.visualization.DataTable(js_data);
+    try {
+        var data = new google.visualization.DataTable(js_data);
+    } catch (e) {
+        $('.frame').html('<h1>Erreur :</h1><p>' + e.message + '</p>');
+    }
 
     date_formatter.format(data, 0);
 
