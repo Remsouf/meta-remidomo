@@ -125,7 +125,8 @@ def main():
             executor.heating_poweroff()
             rfx_listener.stop()
             sys.exit(0)
-        except Exception:
+        except Exception, e:
+            logger.warning('Emergency shutdown ! %s' % e)
             executor.heating_poweroff()
             # If main thread crashes, we must also stop RFX thread !
             rfx_listener.stop()

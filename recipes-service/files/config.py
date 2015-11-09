@@ -79,7 +79,7 @@ class Config:
             return override
 
         schedule = self.get_schedule(datetime.weekday())
-        return schedule.get_order_for(datetime.get_time())
+        return schedule.get_order_for(datetime.time())
 
     def get_schedule(self, day):
         return self.schedule[day]
