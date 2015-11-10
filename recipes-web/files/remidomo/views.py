@@ -453,12 +453,6 @@ def data(_, name, db_type):
         js_cols.append({'label': 'Consigne', 'type': 'number'})
 
     now = datetime.datetime.now()
-    order = conf.get_order_for(now)
-    if order is None:
-        consigne = 0
-    else:
-        consigne = order.get_value()
-
     no_later_than = now - datetime.timedelta(days=MAX_GRAPH_DAYS_BACK)
 
     if name == 'all':
@@ -485,6 +479,15 @@ def data(_, name, db_type):
 
             # Values known for all sensors ? Then go ahead
             if None not in current_values:
+                # Express in our local TZ and remove tzinfo -> make date naive
+                tstamp = row.timestamp.astimezone(dateutil.tz.tzlocal()).replace(tzinfo=None)
+                # Get order for this given timestamp
+                order = conf.get_order_for(tstamp)
+                if order is None:
+                    consigne = 0
+                else:
+                    consigne = order.get_value()
+
                 data_array = [{'v': __python_date_to_js(row.timestamp)}]
                 if show_setpoint:
                     data_array.append({'v': consigne})
@@ -498,6 +501,15 @@ def data(_, name, db_type):
 
         js_rows = []
         for row in rows:
+            # Express in our local TZ and remove tzinfo -> make date naive
+            tstamp = row.timestamp.astimezone(dateutil.tz.tzlocal()).replace(tzinfo=None)
+            # Get order for this given timestamp
+            order = conf.get_order_for(tstamp)
+            if order is None:
+                consigne = 0
+            else:
+                consigne = order.get_value()
+
             data_array = [{'v': __python_date_to_js(row.timestamp)}]
             if show_setpoint:
                 data_array.append({'v': consigne})
