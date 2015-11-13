@@ -51,7 +51,7 @@
         <a class="navitem" href="/config">Configuration</a>
         <a class="navitem" href="/admin">Administration</a>
         {% if user.is_authenticated %}
-        <a class="navitem" href="/logout">[{{ user.get_username }}] D&eacute;connexion</a>
+        <a class="navitem" href="/logout">[{{ user.get_username }}]&nbsp;D&eacute;connexion</a>
         {% else %}
         <a class="navitem" href="/login/?next=/status/">Connexion</a>
         {% endif %}

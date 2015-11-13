@@ -71,6 +71,7 @@ span.brand {
 }
 
 a.navitem {
+    line-height: 40px;
     font-family: arial;
     padding-right: 3em;
     padding-left: 3em;
