@@ -252,7 +252,7 @@
         {% for day in days %}
             // {{ day.name }}
             {% for order in day.schedule.get_orders %}
-                {id: {{ iterator.next }}, content: {{ order.get_value }}, start: {{ order.get_begin_js }}, end: {{ order.get_end_js }}, group: {{ forloop.parentloop.counter }} },
+                {id: {{ iterator.next }}, content: {{ order.get_value|stringformat:"f" }}, start: {{ order.get_begin_js }}, end: {{ order.get_end_js }}, group: {{ forloop.parentloop.counter }} },
             {% endfor %}
         {% endfor %}
     ], {

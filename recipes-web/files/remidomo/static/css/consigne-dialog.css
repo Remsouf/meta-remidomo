@@ -17,9 +17,24 @@
     padding-left: 0.5em;
 }
 
+.temperature-current-container {
+    margin: auto;
+    width: 3em;
+    padding-bottom: 16px;
+}
+
+.temperature-current {
+    display: table-cell;
+    font-size: 2em;
+}
+
 .temperature-units {
     display: table-cell;
     vertical-align: top;
+}
+
+.date-current {
+    text-align: center;
 }
 
 .small-button {

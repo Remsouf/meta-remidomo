@@ -44,7 +44,7 @@ google.setOnLoadCallback(drawChart);
 
 function drawChart() {
 
-    var TZ = 2 * {{ time_offset }};
+    var TZ = 2 * {{ time_offset|stringformat:"f" }};
 
     var value_formatter = new google.visualization.NumberFormat({fractionDigits:1, suffix:' {{ units }}'});
     var date_formatter = new google.visualization.DateFormat({pattern: 'd MMM \u00E0 H:mm', timeZone: TZ});

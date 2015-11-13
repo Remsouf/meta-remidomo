@@ -175,11 +175,8 @@ def status(request):
         current_power = rows[0].value
         since_when = __elapsed_time(rows[0].timestamp)
 
-    # Override
-    if conf:
-        override_applied = conf.get_override_for(datetime.datetime.now()) is not None
-    else:
-        override_applied = False
+    # Override (can be None)
+    override_applied = conf.get_override_for(datetime.datetime.now())
 
     power_data = {'name': power_name.capitalize(),
                   'power': current_power,

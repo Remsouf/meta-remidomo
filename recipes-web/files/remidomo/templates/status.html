@@ -80,6 +80,18 @@
     <input id="datepicker" />
 </div>
 
+<div id="dialog-override-clear" title="D&eacute;rogation">
+    <div class="slider-container">
+        <p>D&eacute;rogation en cours :</p>
+        <div class="temperature-current-container">
+            <div class="temperature-current">{{ override_applied.get_value }}</div>
+            <div class="temperature-units">&deg;C</div>
+        </div>
+        <p>jusqu'&agrave; :</p>
+        <div class="date-current">{{ override_applied.get_end }}</div>
+    </div>
+</div>
+
 <div id="override-success" title="Confirmation">
     <div class="saving">D&eacute;rogation sauvegard&eacute;e.</div>
 </div>
@@ -122,22 +134,28 @@
     }).click(function() {
 
         {% if override_applied %}
-        $.ajax({ url: '/override/clear',
-             type: 'POST',
-             data: { csrfmiddlewaretoken: '{{ csrf_token }}' },
-             success: function(response) {
-                if (response.status == 'cleared') {
-                    window.location.reload();
-                } else {
-                    $('#override-failure-msg').html(response.status);
+        // Callback to clear override when dialog is accepted
+        $('#dialog-override-clear').one('submit', function(event, ui) {
+            $.ajax({ url: '/override/clear',
+                type: 'POST',
+                data: { csrfmiddlewaretoken: '{{ csrf_token }}' },
+                success: function(response) {
+                    if (response.status == 'cleared') {
+                        window.location.reload();
+                    } else {
+                        $('#override-failure-msg').html(response.status);
+                        $('#override-failure').dialog("open");
+                    }
+                },
+                error: function(xhr, textStatus, thrownError) {
+                    $('#override-failure-msg').html(xhr.status + ": " + xhr.responseText);
                     $('#override-failure').dialog("open");
                 }
-             },
-             error: function(xhr, textStatus, thrownError) {
-                $('#override-failure-msg').html(xhr.status + ": " + xhr.responseText);
-                $('#override-failure').dialog("open");
-             }
+            });
         });
+
+        // Fire dialog
+        $('#dialog-override-clear').dialog("open");
         {% else %}
         // Init value for the dialog
         $('#temperature-slider').slider('value', 20);
@@ -205,6 +223,27 @@
     $('#slider-plus').button().click(function() {
         var s = $('#temperature-slider');
         s.slider('value', s.slider('value') + s.slider( "option", "step" ) );
+    });
+
+    $('#dialog-override-clear').dialog({
+        modal: true,
+        autoOpen: false,
+        draggable: true,
+        resizable: false,
+        width: 'auto',
+        closeText: 'hide',
+        buttons: [{
+            text: "Conserver",
+            click: function() {
+                $(this).dialog("close");
+            }
+        }, {
+            text: "Supprimer",
+            click: function() {
+                $(this).trigger("submit");
+                $(this).dialog("close");
+            }
+        }]
     });
 
     $('#override-success').dialog({
@@ -384,7 +423,7 @@
             {% for sensor in temperature %}
                 var data_{{ sensor.name }}_temp = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
-                    ['{{ sensor.name }}', {{ sensor.temp }}],
+                    ['{{ sensor.name }}', {{ sensor.temp|stringformat:"f" }}],
                 ]);
                 temp_formatter.format(data_{{ sensor.name }}_temp, 1);
                 chart_{{ sensor.name }}_temp.draw(data_{{ sensor.name }}_temp, temp_options);
@@ -393,7 +432,7 @@
             {% for sensor in humidity %}
                 var data_{{ sensor.name }}_humidity = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
-                    ['{{ sensor.name }}', {{ sensor.humidity }}],
+                    ['{{ sensor.name }}', {{ sensor.humidity|stringformat:"f" }}],
                 ]);
                 humidity_formatter.format(data_{{ sensor.name }}_humidity, 1);
                 chart_{{ sensor.name }}_humidity.draw(data_{{ sensor.name }}_humidity, humidity_options);
@@ -401,7 +440,7 @@
 
             var data_{{ power.name }} = google.visualization.arrayToDataTable([
                 ['Label', 'Value'],
-                ['{{ power.name }}', {{ power.power }}],
+                ['{{ power.name }}', {{ power.power|stringformat:"f" }}],
             ]);
             power_formatter.format(data_{{ power.name }}, 1);
             chart_{{ power.name }}.draw(data_{{ power.name }}, power_options);
