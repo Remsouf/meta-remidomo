@@ -176,7 +176,10 @@ def status(request):
         since_when = __elapsed_time(rows[0].timestamp)
 
     # Override (can be None)
-    override_applied = conf.get_override_for(datetime.datetime.now())
+    if conf:
+        override_applied = conf.get_override_for(datetime.datetime.now())
+    else:
+        override_applied = None
 
     power_data = {'name': power_name.capitalize(),
                   'power': current_power,

@@ -81,7 +81,7 @@ a.navitem {
 }
 
 .content {
-    padding: 1em;
+    padding-top: 1em;
     font-family: arial;
     position: absolute;
 }
