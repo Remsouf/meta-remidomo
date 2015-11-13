@@ -1,17 +1,18 @@
 .status {
-    display: table-row;
-    padding: 10px;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
 }
 
 .status-container {
     display: table;
     padding: 8px;
     margin: auto;
+    border-spacing: 10px;
 }
 
 .frame-spacer {
     display: table-cell;
-    border-spacing: 5px;
 }
 
 .frame {
@@ -33,7 +34,7 @@
 }
 
 .content {
-    margin-top: 1em;
+    margin-top: 0.5em;
     width: 100%;
     margin-bottom: 32px;
 }
@@ -49,10 +50,9 @@
 .sensor-background {
     display: table-cell;
     border-radius: 10px;
-    margin-left: 20px;
-    margin-right: 20px;
     background-color: #cbecf4;
-    border-spacing: 15px;
+    border-spacing: 8px;
+    margin-bottom: 20px;
 }
 
 .sensor-data {
@@ -66,7 +66,7 @@
 }
 
 .sensor-spacer {
-    width: 40px;
+    width: 15px;
 }
 
 .saving {
