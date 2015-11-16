@@ -1,0 +1,13 @@
+diff --git a/common/main.c b/common/main.c
+index 592ce07..7945e79 100644
+--- a/common/main.c
++++ b/common/main.c
+@@ -51,7 +51,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ /*
+  * Board-specific Platform code can reimplement show_boot_progress () if needed
+  */
+-void inline __show_boot_progress (int val) {}
++__weak void __show_boot_progress (int val) {}
+ void show_boot_progress (int val) __attribute__((weak, alias("__show_boot_progress")));
+ 
+ #if defined(CONFIG_UPDATE_TFTP)
