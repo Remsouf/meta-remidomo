@@ -546,7 +546,7 @@ def login(request):
                 # If the account is valid and active, we can log the user in.
                 print "User %s logged in successfully." % username
                 auth.login(request, user)
-                return HttpResponseRedirect('/status/')  # request.POST['next'])
+                return HttpResponseRedirect(request.POST['next'])
             else:
                 # An inactive account was used - no logging in !
                 return render_to_response('denied.html',
