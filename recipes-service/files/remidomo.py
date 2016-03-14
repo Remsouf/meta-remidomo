@@ -111,22 +111,26 @@ def main():
             database = Database(config, logger)
             database.connect()
             executor = Executor(config, logger)
-            rfx_listener = RFXListener(config, database, logger)
+            rfx_listener = RFXListener(config, database, executor, logger)
             rfx_listener.start()
             config_timestamp = file_timestamp
+            executor.service_flag(1)
 
         try:
+            executor.blink_activity()
             check_orders(logger, config, executor, database)
             time.sleep(60)
         except KeyboardInterrupt:
             print >> sys.stderr, '\nExiting by user request.\n'
             executor.heating_poweroff()
+            executor.service_flag(0)
             rfx_listener.stop()
             database.close()
             sys.exit(0)
         except Exception, e:
             logger.warning('Emergency shutdown ! %s' % e)
             executor.heating_poweroff()
+            executor.service_flag(0)
             # If main thread crashes, we must also stop RFX thread !
             rfx_listener.stop()
             database.close()

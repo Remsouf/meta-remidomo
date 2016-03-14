@@ -24,9 +24,10 @@ class RFXListener(Thread):
     # Select timeout
     SELECT_TIMEOUT = 10
 
-    def __init__(self, config, database, logger):
+    def __init__(self, config, database, executor, logger):
         Thread.__init__(self)
         self.config = config
+        self.executor = executor
         self.logger = logger
         self.database = database
         self.terminated = False
@@ -60,6 +61,8 @@ class RFXListener(Thread):
             return
         if message.get_schema_type() != 'basic':
             return
+
+        self.executor.blink_sensor()
 
         msg_type = message.get_named_value_string('type')
         if msg_type == 'temp':
