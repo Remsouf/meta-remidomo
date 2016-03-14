@@ -24,19 +24,15 @@ class RFXListener(Thread):
     # Select timeout
     SELECT_TIMEOUT = 10
 
-    def __init__(self, config, logger):
+    def __init__(self, config, database, logger):
         Thread.__init__(self)
         self.config = config
         self.logger = logger
-        self.database = None
+        self.database = database
         self.terminated = False
 
     def run(self):
         self.logger.debug('Starting RFX thread')
-
-        # This separate thread needs its own DB connection
-        self.database = Database(self.config, self.logger)
-
         port = self.config.get_rfxlan_port()
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -76,6 +72,8 @@ class RFXListener(Thread):
 
                 # Insert data into database
                 self.database.insert(device, name, value, units, TYPE_TEMP)
+            else:
+                self.logger.debug('Ignored temperature device %s' % device)
         elif msg_type == 'humidity':
             # Check the device is an interesting one
             device = message.get_named_value_string('device')

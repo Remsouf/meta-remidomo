@@ -3,7 +3,7 @@ SUMMARY = "Remidomo daemon"
 LICENSE = "CC-BY-NC-3.0"
 PR = "r0"
 
-RDEPENDS_${PN} = "bash python python-modules python-misc python-sqlite3 python-pifacedigitalio python-pifacecommon"
+RDEPENDS_${PN} = "bash mariadb python python-modules python-misc mysql-python python-pifacedigitalio python-pifacecommon"
 
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/CC-BY-NC-3.0;md5=da665b47544b8cf138600d9e2aeefadd"
 

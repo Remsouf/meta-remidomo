@@ -3,7 +3,7 @@ SUMMARY = "Remidomo web server"
 LICENSE = "CC-BY-NC-3.0"
 PR = "r0"
 
-RDEPENDS_${PN} = "bash python python-django python-modules python-misc python-flup python-dateutil python-pytz"
+RDEPENDS_${PN} = "bash mariadb python python-django python-modules python-misc python-flup python-dateutil python-pytz"
 
 DEPENDS = "jquery-ui-timepicker-addon"
 

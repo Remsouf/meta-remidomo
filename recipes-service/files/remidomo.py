@@ -109,27 +109,27 @@ def main():
             config = Config(logger)
             config.read_file(options.config)
             database = Database(config, logger)
+            database.connect()
             executor = Executor(config, logger)
-            rfx_listener = RFXListener(config, logger)
+            rfx_listener = RFXListener(config, database, logger)
             rfx_listener.start()
             config_timestamp = file_timestamp
 
         try:
             check_orders(logger, config, executor, database)
             time.sleep(60)
-        except sqlite3.OperationalError, e:
-            logger.warning('DB error: %s' % e)
-            # Do nothing more, and retry (probably just a 'database is locked' error)
         except KeyboardInterrupt:
             print >> sys.stderr, '\nExiting by user request.\n'
             executor.heating_poweroff()
             rfx_listener.stop()
+            database.close()
             sys.exit(0)
         except Exception, e:
             logger.warning('Emergency shutdown ! %s' % e)
             executor.heating_poweroff()
             # If main thread crashes, we must also stop RFX thread !
             rfx_listener.stop()
+            database.close()
             raise
 
 if __name__ == '__main__':

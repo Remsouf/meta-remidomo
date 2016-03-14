@@ -27,7 +27,7 @@ HOST=127.0.0.1
 PORT_START=8080
 RUN_AS=www-data
 FCGI_METHOD=threaded
-DB_FILE=/var/remidomo/db.sqlite3
+MYSQL_CHECK_COMMAND="mysql -h localhost -P 4321 remidomo -e 'show errors'"
 #### DO NOT CHANGE ANYTHING AFTER THIS LINE!
 
 set -e
@@ -48,11 +48,10 @@ d_start()
     do
         echo -n ", $SITE"
 
-        if [ ! -f $DB_FILE ]; then
+        eval $MYSQL_CHECK_COMMAND || {
             python $SITES_PATH/$SITE/manage.py syncdb --noinput
             echo "from django.contrib.auth.models import User; User.objects.create_superuser('root', 'root@root.com', '##ADMIN_PASSWORD##')" | python $SITES_PATH/$SITE/manage.py shell
-            chmod 0666 $DB_FILE
-        fi
+        }
 
         if [ -f $RUNFILES_PATH/$SITE.pid ]; then
             echo -n " already running"

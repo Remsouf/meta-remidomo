@@ -62,8 +62,10 @@ LOGIN_URL = '/login'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join('/var/remidomo', 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'remidomo',
+        'USER': 'mysql',
+        'PORT': '4321',
     }
 }
 
