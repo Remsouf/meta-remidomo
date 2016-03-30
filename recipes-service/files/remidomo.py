@@ -119,6 +119,8 @@ def main():
         try:
             executor.blink_activity()
             check_orders(logger, config, executor, database)
+            if not rfx_listener.isAlive():
+                raise Exception('RFX thread stopped')
             time.sleep(60)
         except KeyboardInterrupt:
             print >> sys.stderr, '\nExiting by user request.\n'

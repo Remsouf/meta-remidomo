@@ -45,11 +45,15 @@ class RFXListener(Thread):
 
         self.logger.debug('Listening to RFX on %s:%d' % (self.BROADCAST_IP, port))
         while not self.terminated:
-            readable, _, _ = select.select([sock], [], [], self.SELECT_TIMEOUT)
-            if len(readable) > 0:
-                data, _ = sock.recvfrom(self.RECV_SIZE)
-                msg = xPLMessage(data)
-                self.handle_message(msg)
+            try:
+                readable, _, _ = select.select([sock], [], [], self.SELECT_TIMEOUT)
+                if len(readable) > 0:
+                    data, _ = sock.recvfrom(self.RECV_SIZE)
+                    msg = xPLMessage(data)
+                    self.handle_message(msg)
+            except Exception, e:
+                self.logger.exception('RFX thread caught an exception')
+                return
 
     def stop(self):
         self.logger.debug('Stopping RFX thread (can take up to %ds)' % self.SELECT_TIMEOUT)

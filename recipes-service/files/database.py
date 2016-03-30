@@ -53,7 +53,6 @@ class Database:
 
     def check_connection(self):
         try:
-            self.connection.ping(True)
             cursor = self.connection.cursor()
             cursor.execute('SELECT 1')
         except MySQLdb.OperationalError:
@@ -105,9 +104,12 @@ class Database:
                     if data is None:
                         self.logger.error('Failed to select latest value during compression')
                     else:
-                        cursor.execute('DELETE FROM %s WHERE id=%d' % (TABLE_NAME, data[0]))
+                        latest_id = data[0]
+                        cursor.execute('DELETE FROM %s WHERE id=%d' % (TABLE_NAME, latest_id))
 
         # In all cases, insert the latest value
+        self.check_connection()
+        cursor = self.connection.cursor()
         cursor.execute('INSERT INTO %s(name, address, timestamp, value, units, type) VALUES("%s", "%s", NOW(), %f, "%s", "%s")' % (TABLE_NAME, name, device, value, units, type))
         self.connection.commit()
         self.mutex.release()
